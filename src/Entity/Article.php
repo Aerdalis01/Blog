@@ -8,6 +8,7 @@ use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Doctrine\ORM\Mapping\HasLifecycleCallbacks;
+use Symfony\Component\Serializer\Attribute\Groups;
 
 #[ORM\Entity(repositoryClass: ArticleRepository::class)]
 #[HasLifecycleCallbacks]
@@ -16,15 +17,19 @@ class Article
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
+    #[Groups(['article'])]
     private ?int $id = null;
 
     #[ORM\Column(length: 70)]
+    #[Groups(['article'])]
     private ?string $title = null;
 
     #[ORM\Column(type: Types::TEXT)]
+    #[Groups(['article'])]
     private ?string $text = null;
 
     #[ORM\Column(length: 70)]
+    #[Groups(['article'])]
     private ?string $author = null;
 
     #[ORM\Column]
@@ -39,10 +44,12 @@ class Article
     /**
      * @var Collection<int, Comment>
      */
-    #[ORM\OneToMany(targetEntity: Comment::class, mappedBy: 'article')]
+    #[ORM\OneToMany(targetEntity: Comment::class, mappedBy: 'article', cascade: ['remove'], orphanRemoval: true)]
+    #[Groups(['article'])]
     private Collection $comment;
 
-    #[ORM\OneToOne(inversedBy: 'article', cascade: ['persist', 'remove'])]
+    #[ORM\OneToOne(inversedBy: 'article', cascade: ['persist', 'remove'], orphanRemoval: true)]
+    #[Groups(['article'])]
     private ?Image $image = null;
 
     public function __construct()

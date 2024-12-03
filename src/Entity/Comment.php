@@ -29,6 +29,7 @@ class Comment
     private ?\DateTimeImmutable $updatedAt = null;
 
     #[ORM\ManyToOne(inversedBy: 'comment')]
+    #[ORM\JoinColumn(onDelete: 'CASCADE')]
     private ?Article $article = null;
 
     #[ORM\PrePersist]
