@@ -9,8 +9,7 @@
     ```bash
     composer require symfony/webpack-encore-bundle
     composer require symfony/maker-bundle --dev
-**Composer**
-    ```bash
+    composer require form validator 
     composer require orm
 **Configuration de Webpack**
     ```bash
