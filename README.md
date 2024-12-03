@@ -11,6 +11,7 @@
     composer require symfony/maker-bundle --dev
     composer require form validator 
     composer require orm
+    composer require symfony/serializer-pack
 **Configuration de Webpack**
     ```bash
     npm install --save-dev @symfony/webpack-encore react react-dom typescript ts-loader @babel/preset-react @babel/preset-env core-js

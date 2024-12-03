@@ -8,7 +8,7 @@ use Symfony\Component\Form\Extension\Core\Type\CollectionType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 
-class Section1Type extends AbstractType
+class SectionType extends AbstractType
 {
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {

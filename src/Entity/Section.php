@@ -7,6 +7,7 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Doctrine\ORM\Mapping\HasLifecycleCallbacks;
+use Symfony\Component\Serializer\Attribute\Groups;
 
 #[ORM\Entity(repositoryClass: SectionRepository::class)]
 #[HasLifecycleCallbacks]
@@ -15,9 +16,11 @@ class Section
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
+    #[Groups(['section'])]
     private ?int $id = null;
 
     #[ORM\Column(length: 70)]
+    #[Groups(['section'])]
     private ?string $name = null;
 
     #[ORM\Column]
@@ -27,6 +30,7 @@ class Section
     private ?\DateTimeImmutable $updatedAt = null;
 
     #[ORM\ManyToOne(inversedBy: 'section')]
+    #[Groups(['section'])]
     private ?Article $article = null;
 
     /**

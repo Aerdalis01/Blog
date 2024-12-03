@@ -3,79 +3,99 @@
 namespace App\Controller;
 
 use App\Entity\Section;
-use App\Form\Section1Type;
-use App\Repository\SectionRepository;
+use App\Form\SectionType;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\Serializer\SerializerInterface;
 
-#[Route('/section')]
-final class SectionController extends AbstractController
+#[Route('/api/section', name: 'app_api_section_')]
+class SectionController extends AbstractController
 {
-    #[Route(name: 'app_section_index', methods: ['GET'])]
-    public function index(SectionRepository $sectionRepository): Response
-    {
-        return $this->render('section/index.html.twig', [
-            'sections' => $sectionRepository->findAll(),
-        ]);
+    public function __construct(
+        private EntityManagerInterface $em,
+        private SerializerInterface $serializer
+    ) {
     }
 
-    #[Route('/new', name: 'app_section_new', methods: ['GET', 'POST'])]
-    public function new(Request $request, EntityManagerInterface $entityManager): Response
+    #[Route('/', name: 'index', methods: ['GET'])]
+    public function index(): JsonResponse
+    {
+        $sections = $this->em->getRepository(Section::class)->findAll();
+
+        $data = $this->serializer->serialize($sections, 'json', ['groups' => 'section']);
+
+        return new JsonResponse($data, 200, [], true);
+    }
+
+    #[Route('/{id}', name: 'show', methods: ['GET'])]
+    public function show(int $id): JsonResponse
+    {
+        $sections = $this->em->getRepository(Section::class)->find($id);
+
+        if (!$sections) {
+            return new JsonResponse(['error' => 'Aucune section trouve.'], 404);
+        }
+
+        $data = $this->serializer->serialize($sections, 'json', ['groups' => 'section']);
+
+        return new Response($data, 200, [], true);
+    }
+
+    #[Route('/new', name: 'new', methods: ['GET', 'POST'])]
+    public function new(Request $request, EntityManagerInterface $entityManager): JsonResponse
     {
         $section = new Section();
-        $form = $this->createForm(Section1Type::class, $section);
+        $form = $this->createForm(SectionType::class, $section);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
             $entityManager->persist($section);
             $entityManager->flush();
 
-            return $this->redirectToRoute('app_section_index', [], Response::HTTP_SEE_OTHER);
+            return new JsonResponse('La section est créé.', 201, []);
         }
 
-        return $this->render('section/new.html.twig', [
-            'section' => $section,
-            'form' => $form,
-        ]);
+        return new JsonResponse('Erreur lors de la création du service', 404, []);
     }
 
-    #[Route('/{id}', name: 'app_section_show', methods: ['GET'])]
-    public function show(Section $section): Response
+    #[Route('/{id}/edit', name: 'edit', methods: ['GET', 'POST'])]
+    public function edit(Request $request, Section $section, EntityManagerInterface $entityManager): JsonResponse
     {
-        return $this->render('section/show.html.twig', [
-            'section' => $section,
-        ]);
-    }
-
-    #[Route('/{id}/edit', name: 'app_section_edit', methods: ['GET', 'POST'])]
-    public function edit(Request $request, Section $section, EntityManagerInterface $entityManager): Response
-    {
-        $form = $this->createForm(Section1Type::class, $section);
+        $form = $this->createForm(SectionType::class, $section);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
             $entityManager->flush();
 
-            return $this->redirectToRoute('app_section_index', [], Response::HTTP_SEE_OTHER);
+            return new JsonResponse('La section a été modifié avec succès.', 201, []);
         }
 
-        return $this->render('section/edit.html.twig', [
-            'section' => $section,
-            'form' => $form,
-        ]);
+        return new JsonResponse('Erreur lors de la modification de la section', 404, []);
     }
 
     #[Route('/{id}', name: 'app_section_delete', methods: ['POST'])]
-    public function delete(Request $request, Section $section, EntityManagerInterface $entityManager): Response
+    public function delete(int $id): JsonResponse
     {
-        if ($this->isCsrfTokenValid('delete'.$section->getId(), $request->getPayload()->getString('_token'))) {
-            $entityManager->remove($section);
-            $entityManager->flush();
+        $section = $this->em->getRepository(Section::class)->find($id);
+
+        if (!$section) {
+            return new JsonResponse(['status' => 'error', 'message' => 'Section non trouvé'], 404);
         }
 
-        return $this->redirectToRoute('app_section_index', [], Response::HTTP_SEE_OTHER);
+        try {
+            foreach ($section->getArticle() as $article) {
+                $this->em->remove($article);
+            }
+            $this->em->remove($section);
+            $this->em->flush();
+
+            return new JsonResponse(['status' => 'success', 'message' => 'Sectionsupprimé avec succès'], 200);
+        } catch (\Exception $e) {
+            return new JsonResponse(['status' => 'error', 'message' => 'Erreur lors de la suppression : '.$e->getMessage()], 500);
+        }
     }
 }
