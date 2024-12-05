@@ -5,21 +5,16 @@ if (!Encore.isRuntimeEnvironmentConfigured()) {
 }
 
 Encore
-
     .setOutputPath('public/build/')
-
     .setPublicPath('/build')
-
     .addEntry('app', './assets/app.tsx')
     .splitEntryChunks()
     .enableSingleRuntimeChunk()
-
     .cleanupOutputBeforeBuild()
     .enableBuildNotifications()
     .enableSourceMaps(!Encore.isProduction())
     // enables hashed filenames (e.g. app.abc123.css)
     .enableVersioning(Encore.isProduction())
-
     // configure Babel
     // .configureBabel((config) => {
     //     config.plugins.push('@babel/a-babel-plugin');
@@ -30,10 +25,8 @@ Encore
         config.useBuiltIns = 'usage';
         config.corejs = '3.38';
     })
-
     // enables Sass/SCSS support
     //.enableSassLoader()
-
     // uncomment if you use TypeScript
     .enableTypeScriptLoader()
     .enableReactPreset()

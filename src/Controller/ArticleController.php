@@ -13,7 +13,7 @@ use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Serializer\SerializerInterface;
 
 #[Route('/api/article', name: 'app_api_article_')]
-class SectionController extends AbstractController
+class ArticleController extends AbstractController
 {
     public function __construct(
         private EntityManagerInterface $em,
@@ -48,12 +48,12 @@ class SectionController extends AbstractController
     #[Route('/new', name: 'new', methods: ['GET', 'POST'])]
     public function new(Request $request, EntityManagerInterface $entityManager): JsonResponse
     {
-        $section = new Article();
-        $form = $this->createForm(ArticleType::class, $section);
+        $article = new Article();
+        $form = $this->createForm(ArticleType::class, $article);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            $entityManager->persist($section);
+            $entityManager->persist($article);
             $entityManager->flush();
 
             return new JsonResponse('L\'article est créé.', 201, []);
@@ -63,18 +63,18 @@ class SectionController extends AbstractController
     }
 
     #[Route('/{id}/edit', name: 'edit', methods: ['GET', 'POST'])]
-    public function edit(Request $request, Article $article, EntityManagerInterface $entityManager): JsonResponse
+    public function edit(Request $request, Section $section, EntityManagerInterface $entityManager): JsonResponse
     {
-        $form = $this->createForm(ArticleType::class, $article);
+        $form = $this->createForm(SectionType::class, $section);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
             $entityManager->flush();
 
-            return new JsonResponse('L\'article est créé.', 201, []);
+            return new JsonResponse('La section a été modifié avec succès.', 201, []);
         }
 
-        return new JsonResponse('Erreur lors de la création de l\article', 404, []);
+        return new JsonResponse('Erreur lors de la modification de la section', 404, []);
     }
 
     #[Route('/{id}', name: 'delete', methods: ['DELETE'])]

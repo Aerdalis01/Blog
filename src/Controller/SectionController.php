@@ -5,10 +5,10 @@ namespace App\Controller;
 use App\Entity\Section;
 use App\Form\SectionType;
 use Doctrine\ORM\EntityManagerInterface;
+use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Serializer\SerializerInterface;
 
@@ -17,7 +17,8 @@ class SectionController extends AbstractController
 {
     public function __construct(
         private EntityManagerInterface $em,
-        private SerializerInterface $serializer
+        private SerializerInterface $serializer,
+        private LoggerInterface $logger
     ) {
     }
 
@@ -42,31 +43,38 @@ class SectionController extends AbstractController
 
         $data = $this->serializer->serialize($sections, 'json', ['groups' => 'section']);
 
-        return new Response($data, 200, [], true);
+        return new JsonResponse($data, 200, [], true);
     }
 
     #[Route('/new', name: 'new', methods: ['GET', 'POST'])]
     public function new(Request $request, EntityManagerInterface $entityManager): JsonResponse
     {
         $section = new Section();
-        $form = $this->createForm(SectionType::class, $section);
-        $form->handleRequest($request);
-
-        if ($form->isSubmitted() && $form->isValid()) {
-            $entityManager->persist($section);
-            $entityManager->flush();
-
-            return new JsonResponse('La section est créé.', 201, []);
+        $name = $request->request->get('name');
+        if (!$name) {
+            return new JsonResponse(['error' => 'Le champ "name" est requis.'], 400);
         }
 
-        return new JsonResponse('Erreur lors de la création du service', 404, []);
+        $section->setName($name);
+        $entityManager->persist($section);
+        $entityManager->flush();
+
+        return new JsonResponse('La section est créée.', 201, []);
+
+        return new JsonResponse([
+            'error' => 'Le formulaire contient des erreurs.',
+            'details' => (string) $form->getErrors(true, false),
+        ], 400);
+
+        return new JsonResponse('Formulaire non soumis.', 400);
     }
 
-    #[Route('/{id}/edit', name: 'edit', methods: ['GET', 'POST'])]
+    #[Route('/{id}/edit', name: 'edit', methods: ['GET', 'POST'], requirements: ['id' => '\d+'])]
     public function edit(Request $request, Section $section, EntityManagerInterface $entityManager): JsonResponse
     {
         $form = $this->createForm(SectionType::class, $section);
-        $form->handleRequest($request);
+
+        $form->submit(['name' => $request->get('name')]);
 
         if ($form->isSubmitted() && $form->isValid()) {
             $entityManager->flush();
@@ -74,20 +82,20 @@ class SectionController extends AbstractController
             return new JsonResponse('La section a été modifié avec succès.', 201, []);
         }
 
-        return new JsonResponse('Erreur lors de la modification de la section', 404, []);
+        return new JsonResponse('Erreur lors de la modification de la section', 400, []);
     }
 
-    #[Route('/{id}', name: 'app_section_delete', methods: ['POST'])]
+    #[Route('/delete/{id}', name: 'app_section_delete', methods: ['DELETE'])]
     public function delete(int $id): JsonResponse
     {
         $section = $this->em->getRepository(Section::class)->find($id);
 
         if (!$section) {
-            return new JsonResponse(['status' => 'error', 'message' => 'Section non trouvé'], 404);
+            return new JsonResponse(['status' => 'error', 'message' => 'Section non trouvé'], 400);
         }
 
         try {
-            foreach ($section->getArticle() as $article) {
+            foreach ($section->getArticles() as $article) {
                 $this->em->remove($article);
             }
             $this->em->remove($section);

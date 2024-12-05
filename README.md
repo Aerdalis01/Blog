@@ -8,10 +8,14 @@
 **Ajout des dépendances symfony**
     ```bash
     composer require symfony/webpack-encore-bundle
-    composer require symfony/maker-bundle --dev
     composer require form validator 
     composer require orm
     composer require symfony/serializer-pack
+    composer require symfony/monolog-bundle
+
+    composer require symfony/web-profiler-bundle --dev
+    composer require symfony/maker-bundle --dev
+    
 **Configuration de Webpack**
     ```bash
     npm install --save-dev @symfony/webpack-encore react react-dom typescript ts-loader @babel/preset-react @babel/preset-env core-js
@@ -39,3 +43,7 @@
 **Installer et configurer pretiiter**
     ```bash
     npm install --save--dev prettier
+    npm install mdb-react-ui-kit
+    npm install react-bootstrap bootstrap
+    npm install react-router-dom
+

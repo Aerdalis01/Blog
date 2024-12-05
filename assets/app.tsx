@@ -1,13 +1,36 @@
 import React from 'react';
-import ReactDOM from 'react-dom';
-import './styles/app.css'; 
+import { createRoot } from "react-dom/client";
+import { BrowserRouter as Router, Route, Routes, useLocation } from "react-router-dom";
+import './styles/app.css';
+import 'bootstrap/dist/css/bootstrap.min.css';
 
-const App = () => {
+
+import { Header } from './react/components/Header';
+import { HomePage } from './react/pages/HomePage';
+
+
+const App: React.FC = () => {
+    console.log("Rendering App...");
     return (
-        <div>
-            <h1>Hello Symfony + React!</h1>
-        </div>
+        <Router>
+            <Header />
+            <Routes>
+                <Route path="/" element={<HomePage />} />
+            </Routes>
+        </Router>
     );
 };
+// const App = () => {
+//     console.log("Rendering Test Component...");
+//     return <h1>Hello, React is working!</h1>;
+// };
 
-ReactDOM.render(<App />, document.getElementById('root'));
+const rootElement = document.getElementById("root");
+console.log("Root element:", rootElement);
+
+if (rootElement) {
+    const root = createRoot(rootElement);
+    root.render(<App />);
+} else {
+    console.error("Root element not found");
+}

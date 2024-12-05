@@ -23,6 +23,7 @@ class SectionType extends AbstractType
                 'allow_add' => true,
                 'allow_delete' => true,
                 'by_reference' => false,
+                'required' => false,
             ]);
     }
 
@@ -30,6 +31,7 @@ class SectionType extends AbstractType
     {
         $resolver->setDefaults([
             'data_class' => Section::class,
+            'csrf_protection' => false,
         ]);
     }
 }

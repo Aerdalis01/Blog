@@ -23,6 +23,11 @@
         "watch": "encore dev --watch",
         "build": "encore production --progress",
         "format": "prettier --write \"assets/**/*.{ts,tsx,js,jsx}\""
-        
+    },
+    "dependencies": {
+        "bootstrap": "^5.3.3",
+        "mdb-react-ui-kit": "^9.0.0",
+        "react-bootstrap": "^2.10.6",
+        "react-router-dom": "^7.0.2"
     }
 }

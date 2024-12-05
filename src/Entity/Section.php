@@ -7,6 +7,7 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Doctrine\ORM\Mapping\HasLifecycleCallbacks;
+use Doctrine\ORM\Mapping\JoinColumn;
 use Symfony\Component\Serializer\Attribute\Groups;
 
 #[ORM\Entity(repositoryClass: SectionRepository::class)]
@@ -29,15 +30,12 @@ class Section
     #[ORM\Column(nullable: true)]
     private ?\DateTimeImmutable $updatedAt = null;
 
-    #[ORM\ManyToOne(inversedBy: 'section')]
-    #[Groups(['section'])]
-    private ?Article $article = null;
-
     /**
      * @var Collection<int, Article>
      */
     #[ORM\OneToMany(targetEntity: Article::class, mappedBy: 'section', cascade: ['remove'], orphanRemoval: true)]
-    private Collection $articles;
+    #[JoinColumn(nullable: true)]
+    private ?Collection $articles = null;
 
     public function __construct()
     {
@@ -84,22 +82,10 @@ class Section
         return $this;
     }
 
-    public function getArticle(): ?Article
-    {
-        return $this->article;
-    }
-
-    public function setArticle(?Article $article): static
-    {
-        $this->article = $article;
-
-        return $this;
-    }
-
     /**
      * @return Collection<int, Article>
      */
-    public function getArticles(): Collection
+    public function getArticles(): ?Collection
     {
         return $this->articles;
     }
