@@ -1,3 +1,11 @@
-body {
-    background-color:tansparent !important;
+
+/*Dashboard*/
+.dashboard-container {
+    height: 90svh;
+}
+
+
+/* HomePage*/
+.home-page {
+    height: 90svh;
 }

@@ -12,7 +12,7 @@
     composer require orm
     composer require symfony/serializer-pack
     composer require symfony/monolog-bundle
-
+    composer require symfony/mime
     composer require symfony/web-profiler-bundle --dev
     composer require symfony/maker-bundle --dev
     

@@ -3,7 +3,10 @@
 namespace App\Controller;
 
 use App\Entity\Article;
+use App\Entity\Image;
+use App\Entity\Section;
 use App\Form\ArticleType;
+use App\Service\ImageService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -17,7 +20,8 @@ class ArticleController extends AbstractController
 {
     public function __construct(
         private EntityManagerInterface $em,
-        private SerializerInterface $serializer
+        private SerializerInterface $serializer,
+        private ImageService $imageService
     ) {
     }
 
@@ -26,7 +30,7 @@ class ArticleController extends AbstractController
     {
         $articles = $this->em->getRepository(Article::class)->findAll();
 
-        $data = $this->serializer->serialize($articles, 'json', ['groups' => 'section']);
+        $data = $this->serializer->serialize($articles, 'json', ['groups' => 'article']);
 
         return new JsonResponse($data, 200, [], true);
     }
@@ -49,8 +53,31 @@ class ArticleController extends AbstractController
     public function new(Request $request, EntityManagerInterface $entityManager): JsonResponse
     {
         $article = new Article();
+        $sectionId = $request->get('sectionId');
+        if (!$sectionId) {
+            return new JsonResponse(['error' => 'Section non trouvée'], 400);
+        }
+        if ($sectionId) {
+            $section = $this->em->getRepository(Section::class)->find($sectionId);
+            $article->setSection($section);
+        }
+
+        // Gestion de l'image
+        $imageId = $request->get('imageId');
+        if ($imageId) {
+            $image = $this->em->getRepository(Image::class)->find($imageId);
+            if (!$image) {
+                return new JsonResponse(['error' => 'Image non trouvée'], 400);
+            }
+            $article->setImage($image);
+        }
         $form = $this->createForm(ArticleType::class, $article);
-        $form->handleRequest($request);
+        $formData = [
+            'title' => $request->get('title'),
+            'text' => $request->get('text'),
+            'author' => $request->get('author'),
+        ];
+        $form->submit($formData);
 
         if ($form->isSubmitted() && $form->isValid()) {
             $entityManager->persist($article);
@@ -59,15 +86,50 @@ class ArticleController extends AbstractController
             return new JsonResponse('L\'article est créé.', 201, []);
         }
 
-        return new JsonResponse('Erreur lors de la création de l\article', 404, []);
+        return new JsonResponse("Erreur lors de la creation de l'article", 404, []);
     }
 
     #[Route('/{id}/edit', name: 'edit', methods: ['GET', 'POST'])]
-    public function edit(Request $request, Section $section, EntityManagerInterface $entityManager): JsonResponse
+    public function edit(Request $request, Article $article, EntityManagerInterface $entityManager): JsonResponse
     {
-        $form = $this->createForm(SectionType::class, $section);
-        $form->handleRequest($request);
+        $sectionId = $request->get('sectionId');
+        if ($sectionId) {
+            $newSection = $this->em->getRepository(Section::class)->find($sectionId);
+            if (!$newSection) {
+                return new JsonResponse(['error' => 'Section non trouvée'], 400);
+            }
 
+            // Vérifiez si la section change
+            if ($article->getSection() !== $newSection) {
+                $article->setSection($newSection);
+            }
+        }
+
+        // Gestion de l'image
+        $imageId = $request->get('imageId');
+
+        if ($imageId) {
+            $newImage = $this->em->getRepository(Image::class)->find($imageId);
+            if (!$newImage) {
+                return new JsonResponse(['error' => 'Image non trouvée'], 400);
+            }
+
+            // Vérifiez s'il existe une ancienne image et supprimez-la
+            $oldImage = $article->getImage();
+            if ($oldImage && $oldImage->getId() !== $newImage->getId()) {
+                $this->em->remove($oldImage);
+            }
+
+            $article->setImage($newImage);
+        }
+
+        $form = $this->createForm(ArticleType::class, $article);
+        $formData = [
+            'title' => $request->get('title'),
+            'text' => $request->get('text'),
+            'author' => $request->get('author'),
+        ];
+        $form->submit($formData);
         if ($form->isSubmitted() && $form->isValid()) {
             $entityManager->flush();
 

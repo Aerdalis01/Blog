@@ -5,7 +5,9 @@ export interface Article {
     id: number;
     title: string;
     author: string;
-    comment?:Comment [];
-    image?: Image[];
+    text: string;
+    comment?: Comment;
+    image?: Image;
+    sectionId: number;
   }
   

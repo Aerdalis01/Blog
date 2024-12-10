@@ -8,6 +8,7 @@ use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Doctrine\ORM\Mapping\HasLifecycleCallbacks;
+use Doctrine\ORM\Mapping\JoinColumn;
 use Symfony\Component\Serializer\Attribute\Groups;
 
 #[ORM\Entity(repositoryClass: ArticleRepository::class)]
@@ -38,17 +39,19 @@ class Article
     #[ORM\Column(nullable: true)]
     private ?\DateTimeImmutable $updatedAt = null;
 
-    #[ORM\ManyToOne(inversedBy: 'articles')]
+    #[ORM\ManyToOne(inversedBy: 'article')]
     private ?Section $section = null;
 
     /**
      * @var Collection<int, Comment>
      */
     #[ORM\OneToMany(targetEntity: Comment::class, mappedBy: 'article', cascade: ['remove'], orphanRemoval: true)]
+    #[JoinColumn(nullable: true)]
     #[Groups(['article'])]
-    private Collection $comment;
+    private ?Collection $comment;
 
     #[ORM\OneToOne(inversedBy: 'article', cascade: ['persist', 'remove'], orphanRemoval: true)]
+    #[JoinColumn(nullable: true)]
     #[Groups(['article'])]
     private ?Image $image = null;
 
@@ -136,7 +139,7 @@ class Article
     /**
      * @return Collection<int, Comment>
      */
-    public function getComment(): Collection
+    public function getComment(): ?Collection
     {
         return $this->comment;
     }

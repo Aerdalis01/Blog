@@ -7,6 +7,7 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 
 import { Header } from './react/components/Header';
 import { HomePage } from './react/pages/HomePage';
+import { DashboardPage } from './react/pages/DashboardPage';
 
 
 const App: React.FC = () => {
@@ -16,6 +17,7 @@ const App: React.FC = () => {
             <Header />
             <Routes>
                 <Route path="/" element={<HomePage />} />
+                <Route id='#dashboard' path="/dashboard" element={<DashboardPage />} />
             </Routes>
         </Router>
     );
