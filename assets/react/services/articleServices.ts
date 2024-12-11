@@ -1,9 +1,17 @@
 
 // Récupération des articles
-export const fetchArticle = async () => {
+export const fetchArticles = async () => {
   const res = await fetch('/api/article/');
   if (!res.ok) {
     throw new Error('Erreur lors du chargement des articles');
+  }
+  const data = await res.json();
+  return data;
+};
+export const fetchArticle = async (articleId: number) => {
+  const res = await fetch(`/api/article/${articleId}`);
+  if (!res.ok) {
+    throw new Error('Erreur lors du chargement de l\'article');
   }
   const data = await res.json();
   return data;

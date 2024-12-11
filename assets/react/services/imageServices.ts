@@ -1,5 +1,6 @@
 export class ImageService {
 
+  
 
   /**
    * Upload une nouvelle image.
@@ -15,7 +16,7 @@ export class ImageService {
     if (subDirectory) {
       formData.append('subDirectory', subDirectory);
     }
-    const response = await fetch(`/images/upload`, {
+    const response = await fetch(`/api/images/upload`, {
       method: 'POST',
       body: formData,
     });
@@ -40,7 +41,7 @@ export class ImageService {
     formData.append('image', file);
     formData.append('subDirectory', subDirectory);
 
-    const response = await fetch(`/images/${imageId}/update`, {
+    const response = await fetch(`/api/images/${imageId}/update`, {
       method: 'POST',
       body: formData,
     });
@@ -59,7 +60,7 @@ export class ImageService {
    * @returns Une confirmation de suppression.
    */
   async deleteImage(imageId: number): Promise<void> {
-    const response = await fetch(`/images/${imageId}`, {
+    const response = await fetch(`api/images/${imageId}`, {
       method: 'DELETE',
     });
 

@@ -6,7 +6,7 @@ import { Link } from "react-router-dom";
 export const Header: React.FC = () => {
   const handleNavClick = (event: React.MouseEvent<HTMLAnchorElement, MouseEvent>) => {
     event.preventDefault();
-    const targetId = event.currentTarget.getAttribute("href")?.substring(1); // Récupère l'id (sans #)
+    const targetId = event.currentTarget.getAttribute("href")?.substring(1);
     const targetElement = targetId ? document.getElementById(targetId) : null;
 
     if (targetElement) {
@@ -23,8 +23,8 @@ export const Header: React.FC = () => {
           <Navbar.Collapse id="basic-navbar-nav">
             <Nav className="me-auto">
               <Nav.Link className='text-light' as={Link} to="/">Accueil</Nav.Link>
-              <Nav.Link className='text-light' as={Link} to="/#section" onClick={handleNavClick}>Section</Nav.Link>
-              <Nav.Link className='text-light' as={Link} to="/#galerie" onClick={handleNavClick}>Galerie</Nav.Link>
+              <Nav.Link className='text-light' as={Link} to="/section" >Section</Nav.Link>
+              <Nav.Link className='text-light' as={Link} to="/galerie" >Galerie</Nav.Link>
               {/* {connected && User.Roles.includes('ROLE_ADMIN') */}
               <Nav.Link className='text-light' as={Link} to="/dashboard">Espace Admin</Nav.Link>
               {/* } */}

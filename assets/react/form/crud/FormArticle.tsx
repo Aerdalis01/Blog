@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react"
 import { Article } from "../../components/models/articleInterface";
-import { createArticle, updateArticle, deleteArticle, fetchArticle } from "../../services/articleServices";
+import { createArticle, updateArticle, deleteArticle, fetchArticles } from "../../services/articleServices";
 import { Section } from "../../components/models/sectionInterface"
-import { ImageService } from "../../services/imageService";
+import { ImageService } from "../../services/imageServices";
 import { fetchSection } from "../../services/sectionServices";
 
 
@@ -37,7 +37,7 @@ export function FormArticle() {
 
   //Load all sections 
   useEffect(() => {
-    fetchArticle().then((articles) => {
+    fetchArticles().then((articles) => {
       console.log("Articles fetched:", articles)
       setArticles(articles)
     })
@@ -130,7 +130,7 @@ export function FormArticle() {
       setFormData({ id: 0, title: "", author: "", text: "", sectionId: 0 });
       setFile(null);
       setPreviewImage(null);
-      setArticles(await fetchArticle());
+      setArticles(await fetchArticles());
     } catch (err) {
       console.error(err);
       setError("Erreur lors de la soumission de l'article.");

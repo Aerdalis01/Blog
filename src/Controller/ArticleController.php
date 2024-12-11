@@ -11,7 +11,6 @@ use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Serializer\SerializerInterface;
 
@@ -38,15 +37,15 @@ class ArticleController extends AbstractController
     #[Route('/{id}', name: 'show', methods: ['GET'])]
     public function show(int $id): JsonResponse
     {
-        $articles = $this->em->getRepository(Article::class)->find($id);
+        $article = $this->em->getRepository(Article::class)->find($id);
 
-        if (!$articles) {
+        if (!$article) {
             return new JsonResponse(['error' => 'Aucune section trouve.'], 404);
         }
 
-        $data = $this->serializer->serialize($articles, 'json', ['groups' => 'article']);
+        $data = $this->serializer->serialize($article, 'json', ['groups' => 'article']);
 
-        return new Response($data, 200, [], true);
+        return new JsonResponse($data, 200, [], true);
     }
 
     #[Route('/new', name: 'new', methods: ['GET', 'POST'])]

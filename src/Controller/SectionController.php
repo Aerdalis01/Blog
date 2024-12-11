@@ -38,7 +38,7 @@ class SectionController extends AbstractController
         $sections = $this->em->getRepository(Section::class)->find($id);
 
         if (!$sections) {
-            return new JsonResponse(['error' => 'Aucune section trouve.'], 404);
+            return new JsonResponse(['error' => 'Aucune section trouve.'], 400);
         }
 
         $data = $this->serializer->serialize($sections, 'json', ['groups' => 'section']);

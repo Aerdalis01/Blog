@@ -18,25 +18,27 @@ class Article
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
-    #[Groups(['article'])]
+    #[Groups(['article', 'section'])]
     private ?int $id = null;
 
     #[ORM\Column(length: 70)]
-    #[Groups(['article'])]
+    #[Groups(['article', 'section'])]
     private ?string $title = null;
 
     #[ORM\Column(type: Types::TEXT)]
-    #[Groups(['article'])]
+    #[Groups(['article', 'section'])]
     private ?string $text = null;
 
     #[ORM\Column(length: 70)]
-    #[Groups(['article'])]
+    #[Groups(['article', 'section'])]
     private ?string $author = null;
 
     #[ORM\Column]
+    #[Groups(['article', 'section'])]
     private ?\DateTimeImmutable $createdAt = null;
 
     #[ORM\Column(nullable: true)]
+    #[Groups(['article', 'section'])]
     private ?\DateTimeImmutable $updatedAt = null;
 
     #[ORM\ManyToOne(inversedBy: 'article')]
@@ -47,12 +49,12 @@ class Article
      */
     #[ORM\OneToMany(targetEntity: Comment::class, mappedBy: 'article', cascade: ['remove'], orphanRemoval: true)]
     #[JoinColumn(nullable: true)]
-    #[Groups(['article'])]
+    #[Groups(['article', 'section'])]
     private ?Collection $comment;
 
     #[ORM\OneToOne(inversedBy: 'article', cascade: ['persist', 'remove'], orphanRemoval: true)]
     #[JoinColumn(nullable: true)]
-    #[Groups(['article'])]
+    #[Groups(['article', 'section'])]
     private ?Image $image = null;
 
     public function __construct()

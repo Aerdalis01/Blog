@@ -5,6 +5,7 @@ namespace App\Entity;
 use App\Repository\ImageRepository;
 use Doctrine\ORM\Mapping as ORM;
 use Doctrine\ORM\Mapping\HasLifecycleCallbacks;
+use Symfony\Component\Serializer\Attribute\Groups;
 
 #[ORM\Entity(repositoryClass: ImageRepository::class)]
 #[HasLifecycleCallbacks]
@@ -13,12 +14,15 @@ class Image
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
+    #[Groups(['image', 'section', 'article'])]
     private ?int $id = null;
 
     #[ORM\Column(length: 255)]
+    #[Groups(['image', 'section', 'article'])]
     private ?string $name = null;
 
     #[ORM\Column(length: 255)]
+    #[Groups(['image', 'section', 'article'])]
     private ?string $url = null;
 
     #[ORM\Column]

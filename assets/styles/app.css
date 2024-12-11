@@ -1,4 +1,7 @@
-
+/*html*/
+.html{
+    font-size: 1.1rem;
+}
 /*Dashboard*/
 .dashboard-container {
     height: 90svh;
@@ -8,4 +11,26 @@
 /* HomePage*/
 .home-page {
     height: 90svh;
+    
+}
+
+/* Section*/
+.section-page {
+    position: relative;
+    min-height: 90svh;
+}
+.section-name{
+    position:absolute;
+    top:2%;
+    left: 50%;
+    transform: translate(-50%);
+}
+/* Article */
+
+
+/* Button*/
+.btn-onback {
+    position:absolute;
+    top: 2%;
+    left: 2%;
 }

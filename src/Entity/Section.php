@@ -35,6 +35,7 @@ class Section
      */
     #[ORM\OneToMany(targetEntity: Article::class, mappedBy: 'section', cascade: ['remove'], orphanRemoval: true)]
     #[JoinColumn(nullable: true)]
+    #[Groups(['section'])]
     private ?Collection $articles = null;
 
     public function __construct()

@@ -55,6 +55,11 @@ export const Sidebar: React.FC<SidebarProps> = ({ onSectionChange }) => {
                         </Link>
                       </li>
                       <li className="nav-item">
+                        <Link className="nav-link" to="#" onClick={() => onSectionChange("article")}>
+                          Commentaires
+                        </Link>
+                      </li>
+                      <li className="nav-item">
                         <Link className="nav-link" to="#" onClick={() => onSectionChange("register")}>
                           Créer un compte utilisateur
                         </Link>

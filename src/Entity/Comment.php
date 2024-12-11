@@ -6,6 +6,7 @@ use App\Repository\CommentRepository;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Doctrine\ORM\Mapping\HasLifecycleCallbacks;
+use Symfony\Component\Serializer\Attribute\Groups;
 
 #[ORM\Entity(repositoryClass: CommentRepository::class)]
 #[HasLifecycleCallbacks]
@@ -14,21 +15,26 @@ class Comment
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
+    #[Groups(['article', 'comment'])]
     private ?int $id = null;
 
     #[ORM\Column(length: 70)]
+    #[Groups(['article', 'comment'])]
     private ?string $author = null;
 
     #[ORM\Column(type: Types::TEXT)]
+    #[Groups(['article', 'comment'])]
     private ?string $text = null;
 
     #[ORM\Column]
+    #[Groups(['article', 'comment'])]
     private ?\DateTimeImmutable $createdAt = null;
 
     #[ORM\Column(nullable: true)]
+    #[Groups(['article', 'comment'])]
     private ?\DateTimeImmutable $updatedAt = null;
 
-    #[ORM\ManyToOne(inversedBy: 'comment')]
+    #[ORM\ManyToOne(targetEntity: Article::class, inversedBy: 'comment')]
     #[ORM\JoinColumn(onDelete: 'CASCADE')]
     private ?Article $article = null;
 

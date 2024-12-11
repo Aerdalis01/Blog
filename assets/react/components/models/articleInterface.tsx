@@ -6,8 +6,10 @@ export interface Article {
     title: string;
     author: string;
     text: string;
-    comment?: Comment;
+    comment?: Comment[];
     image?: Image;
     sectionId: number;
+    createdAt?: string;
+    updatedAt?: string;
   }
   

@@ -27,7 +27,7 @@ export const HomePage = () => {
                 <div className="article-content text-center">
                   <h1 className="card-title text-dark">Les sections</h1>
                   <p className="card-text">Lorem ipsum dolor sit amet, consectetur adipiscing elit.</p>
-                  <a href="/news" className="btn btn-primary">Voir plus</a>
+                  <a href="/section" className="btn btn-primary">Voir plus</a>
                 </div>
               </div>
           </div>
