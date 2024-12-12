@@ -47,7 +47,7 @@ export const updateComment= async (id: number, commentData: {  text: string } ) 
 };
 
 export const deleteComment = async (commentId: number) => {
-  const res = await fetch(`/api/section/delete/${commentId}`, { method: 'DELETE' });
+  const res = await fetch(`/api/comment/${commentId}/delete`, { method: 'DELETE' });
   if (!res.ok) {
     throw new Error('Erreur lors de la suppression de la race');
   }

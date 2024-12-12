@@ -5,6 +5,7 @@ namespace App\Controller;
 use App\Entity\Article;
 use App\Entity\Comment;
 use App\Form\CommentType;
+use App\Service\CommentFilterService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -18,7 +19,8 @@ class CommentController extends AbstractController
 {
     public function __construct(
         private EntityManagerInterface $em,
-        private SerializerInterface $serializer
+        private SerializerInterface $serializer,
+        private CommentFilterService $commentFilter
     ) {
     }
 
@@ -32,40 +34,40 @@ class CommentController extends AbstractController
         return new JsonResponse($data, 200, [], true);
     }
 
-    #[Route('/{id}', name: 'show', methods: ['GET'])]
+    #[Route('/{id<\d+>}', name: 'show', methods: ['GET'])]
     public function show(int $id): JsonResponse
     {
         $comment = $this->em->getRepository(Comment::class)->find($id);
 
         if (!$comment) {
-            return new JsonResponse(['error' => 'Aucune section trouve.'], 400);
+            return new JsonResponse(['error' => 'Aucune commentaire trouve.'], 400);
         }
+        $data = $this->serializer->serialize($comment, 'json', ['groups' => 'comment']);
 
-        return new Response($id, 200, [], true);
+        return new Response($data, 200, [], true);
     }
 
     #[Route('/new', name: 'new', methods: ['GET', 'POST'])]
     public function new(Request $request, EntityManagerInterface $entityManager): JsonResponse
     {
-        // dd($request->request->all());
         $articleId = $request->get('articleId');
 
-        // Récupération de l'entité Article à partir de l'ID
         $article = $entityManager->getRepository(Article::class)->find($articleId);
-        // dd($entityManager->contains($article));
+
         if (!$article) {
             return new JsonResponse(['error' => 'Article non trouvé'], 404);
         }
 
         $comment = new Comment();
         $form = $this->createForm(CommentType::class, $comment);
+
+        $text = $this->commentFilter->filter($request->get('text'));
         $formData = [
-            'text' => $request->get('text'),
+            'text' => $text,
             'author' => $request->get('author'),
             'article' => $article->getId(),
         ];
 
-        // dd('formdata', $formData);
         $form->submit($formData);
         if (!$form->isValid()) {
             return new JsonResponse([
@@ -93,32 +95,79 @@ class CommentController extends AbstractController
             return new JsonResponse(['error' => 'Le texte est requis'], 400);
         }
 
-        $comment->setText($text);
+        $filteredText = $this->commentFilter->filter($text);
+        $comment->setText($filteredText);
         $comment->setUpdatedAt(new \DateTimeImmutable());
         $em->flush();
 
         return new JsonResponse(['message' => 'Commentaire mis à jour avec succès'], 200);
     }
 
-    #[Route('/{id}', name: 'delete', methods: ['DELETE'])]
-    public function delete(int $id): JsonResponse
+    #[Route('/{id}/delete', name: 'delete', methods: ['DELETE'])]
+    public function delete(int $id, Request $request): JsonResponse
     {
         $comment = $this->em->getRepository(Comment::class)->find($id);
 
         if (!$comment) {
-            return new JsonResponse(['status' => 'error', 'message' => 'Section non trouvé'], 400);
+            return new JsonResponse(['status' => 'error', 'message' => 'Commentairenon trouvé'], 400);
         }
 
-        try {
-            foreach ($comment->getArticle() as $article) {
-                $this->em->remove($article);
-            }
-            $this->em->remove($comment);
-            $this->em->flush();
+        $this->em->remove($comment);
+        $this->em->flush();
 
-            return new JsonResponse(['status' => 'success', 'message' => 'Commentaire supprimé avec succès'], 200);
-        } catch (\Exception $e) {
-            return new JsonResponse(['status' => 'error', 'message' => 'Erreur lors de la suppression : '.$e->getMessage()], 500);
+        return new JsonResponse(['status' => 'success', 'message' => 'Commentaire supprimé avec succès'], 200);
+
+        return new JsonResponse(['status' => 'error', 'message' => 'Erreur lors de la suppression : '.$e->getMessage()], 500);
+    }
+
+    #[Route('/{id}/moderate', name: 'moderate_comment', methods: ['POST'])]
+    public function moderateComment(Request $request, int $id): JsonResponse
+    {
+        $comment = $this->em->getRepository(Comment::class)->find($id);
+
+        if (!$comment) {
+            return new JsonResponse(['error' => 'Commentaire non trouvé'], 404);
         }
+
+        $data = json_decode($request->getContent(), true);
+
+        if (!isset($data['status']) || !in_array($data['status'], ['approved', 'rejected'])) {
+            return new JsonResponse(['error' => 'Statut invalide'], 400);
+        }
+
+        $comment->setModerationStatus($data['status']);
+        if ($data['status'] === 'approved') {
+            $comment->setIsFlagged(false); // Retirer le drapeau si approuvé
+        }
+
+        $this->em->flush();
+
+        return new JsonResponse(['message' => 'Commentaire modéré avec succès'], 200);
+    }
+
+    #[Route('/flagged', name: 'get_flagged_comments', methods: ['GET'])]
+    public function getFlaggedComments(): JsonResponse
+    {
+        $flaggedComments = $this->em->getRepository(Comment::class)->findBy(['isFlagged' => true]);
+
+        $data = $this->serializer->serialize($flaggedComments, 'json', ['groups' => 'comment']);
+
+        return new JsonResponse($data, 200, [], true);
+    }
+
+    #[Route('/{id}/flag', name: 'flag_comment', methods: ['POST'])]
+    public function flagComment(int $id): JsonResponse
+    {
+        $comment = $this->em->getRepository(Comment::class)->find($id);
+
+        if (!$comment) {
+            return new JsonResponse(['error' => 'Commentaire non trouvé'], 404);
+        }
+
+        $comment->setIsFlagged(true);
+        $comment->setModerationStatus('pending'); // Statut "en attente"
+        $this->em->flush();
+
+        return new JsonResponse(['message' => 'Commentaire signalé avec succès'], 200);
     }
 }

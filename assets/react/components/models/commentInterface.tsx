@@ -5,5 +5,8 @@ export interface Comment {
       articleId: number;
       createdAt?: string;
       updatedAt?: string;
+      isFlag?: boolean;
+      moderationStatus?: string;
+
     }
   

@@ -38,6 +38,14 @@ class Comment
     #[ORM\JoinColumn(onDelete: 'CASCADE')]
     private ?Article $article = null;
 
+    #[ORM\Column(type: 'boolean', options: ['default' => false])]
+    #[Groups(['article', 'comment'])]
+    private bool $isFlagged = false;
+
+    #[ORM\Column(length: 20, options: ['default' => 'pending'])]
+    #[Groups(['article', 'comment'])]
+    private string $moderationStatus = 'pending'; // "pending", "approved", "rejected"
+
     #[ORM\PrePersist]
     public function setCreatedAt(): void
     {
@@ -98,6 +106,30 @@ class Comment
     public function setArticle(?Article $article): static
     {
         $this->article = $article;
+
+        return $this;
+    }
+
+    public function isFlagged(): bool
+    {
+        return $this->isFlagged;
+    }
+
+    public function setIsFlagged(bool $isFlagged): static
+    {
+        $this->isFlagged = $isFlagged;
+
+        return $this;
+    }
+
+    public function getModerationStatus(): string
+    {
+        return $this->moderationStatus;
+    }
+
+    public function setModerationStatus(string $moderationStatus): static
+    {
+        $this->moderationStatus = $moderationStatus;
 
         return $this;
     }

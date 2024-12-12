@@ -17,8 +17,24 @@ export const ArticleDetail: React.FC<ArticleDetailProps> = ({ articleId, onBack 
   const [loading, setLoading] = useState(true);
   const [comments, setComments] = useState<Comment[]>([]);
   const [error, setError] = useState<string | null>(null);
-  const [editingCommentId, setEditingCommentId] = useState<number | null>(null); // ID du commentaire en cours d'édition
-  const [updatedText, setUpdatedText] = useState<string>(''); // Texte mis à jour
+  const [editingCommentId, setEditingCommentId] = useState<number | null>(null);
+  const [updatedText, setUpdatedText] = useState<string>(''); // 
+
+  const handleFlagComment = async (id: number) => {
+    try {
+      const response = await fetch(`/api/comment/${id}/flag`, {
+        method: 'POST',
+      });
+      if (!response.ok) {
+        throw new Error('Erreur lors du signalement du commentaire');
+      }
+      console.log('Commentaire signalé');
+
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
 
   const handleUpdateSubmit = async (e: React.FormEvent<HTMLFormElement>, commentId: number) => {
     e.preventDefault();
@@ -124,25 +140,32 @@ export const ArticleDetail: React.FC<ArticleDetailProps> = ({ articleId, onBack 
                 <Accordion.Item eventKey="0">
                   <Accordion.Header>Voir commentaire</Accordion.Header>
                   <Accordion.Body>
-                    <div>
-                      {article ? (
-                        <div>
-                          <h4>Commenter l'article</h4>
-                          <FormComment articleId={article.id} />
-                        </div>
-                      ) : (
-                        <p>Aucun article disponible</p>
-                      )}
-                    </div>
+                    <Accordion>
+                      <Accordion.Item eventKey="0">
+                        <Accordion.Header>Ajouter un commentaire</Accordion.Header>
+                        <Accordion.Body>
+                          <div>
+                            {article ? (
+                              <div className='my-5'>
+                                <h4>Commenter l'article</h4>
+                                <FormComment articleId={article.id} />
+                              </div>
+                            ) : (
+                              <p>Aucun article disponible</p>
+                            )}
+                          </div>
+                        </Accordion.Body>
+                      </Accordion.Item>
+                    </Accordion>
                     <div className='comments-list container-fluid'>
                       <div className='row'>
                         <div className='col-12' >
                           {article.comment && article.comment.length > 0 ? (
                             article.comment.map((comment) => (
                               <div key={comment.id} className="comment card mb-3">
-                                <div className="card-body">
+                                <div className="card-body card-comment d-flex flex-column align-items-center justify-content-center">
                                   {editingCommentId === comment.id ? (
-                                    <form onSubmit={(e) => handleUpdateSubmit(e ,comment.id)}>
+                                    <form onSubmit={(e) => handleUpdateSubmit(e, comment.id)}>
                                       <textarea
                                         className="form-control"
                                         value={updatedText}
@@ -162,19 +185,28 @@ export const ArticleDetail: React.FC<ArticleDetailProps> = ({ articleId, onBack 
                                     </form>
                                   ) : (
                                     <>
-                                      <p className="card-text">{comment.text}</p>
+                                      <p className="card-text my-5">{comment.text}</p>
                                       <p className="card-subtitle text-muted">
                                         <em>- {comment.author || 'Anonyme'}</em>
                                       </p>
-                                      <p>Créé le : {new Date(comment.createdAt).toLocaleDateString()}</p>
-                                      {comment.updatedAt && (
-                                        <p>Mis à jour le : {new Date(comment.updatedAt).toLocaleDateString()}</p>
-                                      )}
-                                      <FontAwesomeIcon
-                                        icon={faEdit}
-                                        style={{ cursor: 'pointer', color: 'blue' }}
-                                        onClick={() => handleEditComment(comment)}
-                                      />
+                                      <button
+                                        className="btn btn-warning btn-moderation"
+                                        onClick={() => handleFlagComment(comment.id)}
+                                      >
+                                        Signaler
+                                      </button>
+                                      <div className='d-flex'>
+                                        <p className='mx-5'>Créé le : {new Date(comment.createdAt).toLocaleDateString()}</p>
+                                        {comment.updatedAt && (
+                                          <p className='mx-5'>Mis à jour le : {new Date(comment.updatedAt).toLocaleDateString()}</p>
+                                        )}
+                                        <FontAwesomeIcon
+                                          className='mx-5'
+                                          icon={faEdit}
+                                          style={{ cursor: 'pointer', color: 'blue' }}
+                                          onClick={() => handleEditComment(comment)}
+                                        />
+                                      </div>
                                     </>
                                   )}
                                 </div>

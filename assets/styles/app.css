@@ -28,9 +28,24 @@
 /* Article */
 
 
+/*Comment*/
+.car-comment{
+    position: relative;
+}
+.card-text {
+    width: 80%;
+}
+
 /* Button*/
+
 .btn-onback {
     position:absolute;
     top: 2%;
     left: 2%;
+    z-index: 1000;
+}
+.btn-moderation{
+    position: absolute;
+    top: 2%;
+    right: 1%;
 }

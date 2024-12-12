@@ -3,6 +3,7 @@
 namespace App\Controller;
 
 use App\Entity\Article;
+use App\Entity\Comment;
 use App\Entity\Image;
 use App\Entity\Section;
 use App\Form\ArticleType;
@@ -153,5 +154,23 @@ class ArticleController extends AbstractController
         return new JsonResponse(['status' => 'success', 'message' => 'Sectionsupprimé avec succès'], 200);
 
         return new JsonResponse(['status' => 'error', 'message' => 'Erreur lors de la suppression : '.$e->getMessage()], 500);
+    }
+
+    #[Route('/{id}/flag', name: 'flag_comment', methods: ['POST'])]
+    public function flagComment(Comment $comment): JsonResponse
+    {
+        $comment->setIsFlagged(true);
+        $comment->setModerationStatus('pending');
+        $this->em->flush();
+
+        return new JsonResponse(['message' => 'Commentaire signalé pour modération'], 200);
+    }
+
+    #[Route('/flagged', name: 'get_flagged_comments', methods: ['GET'])]
+    public function getFlaggedComments(EntityManagerInterface $em): JsonResponse
+    {
+        $comments = $em->getRepository(Comment::class)->findBy(['isFlagged' => true]);
+
+        return $this->json($comments, 200, [], ['groups' => 'comment:read']);
     }
 }

@@ -27,6 +27,7 @@
     "dependencies": {
         "@fortawesome/free-solid-svg-icons": "^6.7.1",
         "@fortawesome/react-fontawesome": "^0.2.2",
+        "bad-words": "^4.0.0",
         "bootstrap": "^5.3.3",
         "mdb-react-ui-kit": "^9.0.0",
         "react-bootstrap": "^2.10.6",

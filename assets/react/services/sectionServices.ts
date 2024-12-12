@@ -38,7 +38,7 @@ export const updateSection = async (id: number, sectionData: { name: string } ) 
 };
 
 export const deleteSection = async (sectionId: number) => {
-  const res = await fetch(`/api/section/delete/${sectionId}`, { method: 'DELETE' });
+  const res = await fetch(`/api/section/${sectionId}/delete`, { method: 'DELETE' });
   if (!res.ok) {
     throw new Error('Erreur lors de la suppression de la race');
   }

@@ -62,16 +62,16 @@ const handleArticleClick = (id: number) => {
           <div className='row row-cols-12'>
             {section.articles.length > 0 ? (
               section.articles.map((article) => (
-                <div key={article.id} onClick={() => handleArticleClick(article.id)} style={{ cursor: 'pointer' }} className="card container-fluid article col-12">
+                <div key={article.id} onClick={() => handleArticleClick(article.id)} style={{ cursor: 'pointer' }} className="card container-fluid article col-12 d-flex flex-column justify-content-center align-items-center">
                   <div className="card-body">
-                    <div className="col d-flex align-items-center justify-content-center">
-                      <div className="article-content d-flex flex-row text-center">
-                        <img src={`/uploads/${article.image.url}`} alt={article.image.name || 'Image'} className="img-fluid col-1" />
-                        <div className='w-100'>
+                    <div className="">
+                      <div className="article-content d-md-flex">
+                        <img src={`/uploads/${article.image.url}`} alt={article.image.name || 'Image'} className="img-fluid col-6 col-sm-4 col-md-1" />
+                        <div className='d-flex flex-column justify-content-center align-items-center w-100 '>
                         <h3 className="card-title text-dark">{article.title}</h3>
                         <article className="card-text text-dark">{truncaText(article.text, 100)}</article>
                         </div>
-                        <p>Auteur : {article.author}</p>
+                        <p className='mb-0 mt-3'>Auteur : {article.author}</p>
                       </div>
                     </div>
                   </div>

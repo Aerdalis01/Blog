@@ -25,10 +25,7 @@ const App: React.FC = () => {
         </Router>
     );
 };
-// const App = () => {
-//     console.log("Rendering Test Component...");
-//     return <h1>Hello, React is working!</h1>;
-// };
+
 
 const rootElement = document.getElementById("root");
 console.log("Root element:", rootElement);

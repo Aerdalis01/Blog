@@ -8,7 +8,7 @@ use Symfony\Component\Routing\Attribute\Route;
 
 class DefaultController extends AbstractController
 {
-    #[Route('/{reactRouting}', name: 'app_frontend', requirements: ['reactRouting' => '^(?!api).+'], priority: -1)]
+    #[Route('/{reactRouting}', name: 'home', methods: ['GET'])]
     public function index(): Response
     {
         return $this->render('/index.html.twig');
