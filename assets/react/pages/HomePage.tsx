@@ -8,15 +8,16 @@ import { Section } from '../components/models/sectionInterface';
 import { Article } from '../components/models/articleInterface';
 import { faDivide } from '@fortawesome/free-solid-svg-icons';
 import { useNavigate } from 'react-router-dom';
+import { Image } from '../components/models/imageInterface';
 
 
 
 export const HomePage = () => {
-  const [latestArticle, setLatestArticle] = useState([]);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [featuredSection, setFeaturedSection] = useState<Section[]>([]);
   const navigate = useNavigate();
+  const [latestImage, setLatestImage] = useState(null);
 
   const handleArticleClick = (id: number) => {
     navigate(`/article/${id}`);
@@ -27,6 +28,29 @@ export const HomePage = () => {
     }
     return text;
   }
+
+  useEffect(() => {
+    const fetchLatestImage = async () => {
+      try {
+        const response = await fetch('/api/images/latest-image');
+        if (!response.ok) {
+          throw new Error('Failed to fetch latest image');
+        }
+        const data = await response.json();
+        if (data.length > 0) {
+          setLatestImage(data); // Assurez-vous que c'est le premier élément
+        } else {
+          setLatestImage([]); // Pas d'image disponible
+        }
+      } catch (err) {
+        console.error(err);
+        setError(err.message); // Gérer l'erreur
+      }
+    };
+
+    fetchLatestImage();
+  }, []);
+
   useEffect(() => {
     const fetchFeaturedSections = async () => {
       try {
@@ -92,7 +116,7 @@ export const HomePage = () => {
                       <img
                         src={`/uploads/${latestArticle.image.url}`}
                         alt={latestArticle.image.name || 'Image'}
-                        className="img-fluid mb-3 col-6"
+                        className="img-fluid mb-3 col-9 col-md-6"
                       />
                     ) : (
                       <p>Aucune image disponible</p>
@@ -111,7 +135,7 @@ export const HomePage = () => {
           if (section.name !== "News" && section.articles.length > 0) {
             const latestArticle = section.articles[0];
             return (
-              <div key={section.id} className="col-12 col-md-6 col-lg-4 px-2">
+              <div key={section.id} className="col-12 col-md-6  px-2">
                 <div className="card standard-section h-100">
                   <div className="card-body">
                     <h2 className="card-title text-dark">{section.name}</h2>
@@ -120,10 +144,10 @@ export const HomePage = () => {
                         <img
                           src={`/uploads/${latestArticle.image.url}`}
                           alt={latestArticle.image.name || 'Image'}
-                          className="img-fluid mb-3 col-3"
+                          className="img-fluid mb-3 col-6 col-md-3"
                         />
                       ) : (
-                        <p>Aucune image disponible</p>
+                        <p></p>
                       )}
                     </div>
                     <div className='d-flex flex-column align-items-center justify-content-center justify-content-center'>
@@ -138,6 +162,31 @@ export const HomePage = () => {
           }
           return null;
         })}
+      </div>
+      <div className='container-fluid'>
+        <div className='row g-3'>
+          {latestImage ? (
+            latestImage.map((image: Image) => (
+              <div className='col-12 col-md-6 col-lg-4'>
+                <div key={image.id}>
+                  <div className='card'>
+                    <div className='car-body d-flex align-items-center justify-content-center '>
+                      <img
+                        src={`/uploads/${image.url}`}
+                        alt={image.name || 'Image'}
+                        className="col-10"
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ))
+          ) : error ? (
+            <p style={{ color: 'red' }}>Erreur : {error}</p>
+          ) : (
+            <p>Chargement des images...</p>
+          )}
+        </div>
       </div>
     </section>
   );

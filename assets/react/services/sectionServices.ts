@@ -32,10 +32,11 @@ export const createSection = async (sectionData) => {
   return res.json();
 };
 
-export const updateSection = async (id: number, sectionData: { name: string, featured: boolean } ) => {
+export const updateSection = async (id: number, sectionData: { name: string, featured: boolean;} ) => {
   const formData = new FormData();
   formData.append("name", sectionData.name);
-  formData.append("featured", sectionData.featured.toString()); 
+  if (sectionData.featured !== undefined) formData.append("featured", sectionData.featured.toString());
+  
   const res = await fetch(`/api/section/${id}/edit`, {
     method: 'POST',  
     body: formData, 

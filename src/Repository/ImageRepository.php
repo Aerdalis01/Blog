@@ -19,17 +19,15 @@ class ImageRepository extends ServiceEntityRepository
     //    /**
     //     * @return Image[] Returns an array of Image objects
     //     */
-    //    public function findByExampleField($value): array
-    //    {
-    //        return $this->createQueryBuilder('i')
-    //            ->andWhere('i.exampleField = :val')
-    //            ->setParameter('val', $value)
-    //            ->orderBy('i.id', 'ASC')
-    //            ->setMaxResults(10)
-    //            ->getQuery()
-    //            ->getResult()
-    //        ;
-    //    }
+    public function findLatestImage(int $limit = 3): array
+    {
+        return $this->createQueryBuilder('i')
+        ->orderBy('i.createdAt', 'DESC')
+        ->setMaxResults($limit)
+        ->getQuery()
+        ->getResult()
+        ;
+    }
 
     //    public function findOneBySomeField($value): ?Image
     //    {

@@ -3,6 +3,7 @@
 namespace App\Controller;
 
 use App\Entity\Image;
+use App\Repository\ImageRepository;
 use App\Service\ImageService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -66,5 +67,14 @@ class ImageController extends AbstractController
         } catch (\Exception $e) {
             return $this->json(['error' => $e->getMessage()], JsonResponse::HTTP_INTERNAL_SERVER_ERROR);
         }
+    }
+
+    #[Route('/latest-image', name: 'latest_image', methods: ['GET'])]
+    public function getLatestImage(ImageRepository $imageRepository, SerializerInterface $serializer): JsonResponse
+    {
+        $latestImage = $imageRepository->findLatestImage();
+        $data = $serializer->serialize($latestImage, 'json', ['groups' => 'image']);
+
+        return new JsonResponse($data, 200, [], true);
     }
 }

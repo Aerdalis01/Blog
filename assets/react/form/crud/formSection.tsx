@@ -17,7 +17,6 @@ export function FormSection() {
   const [error, setError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
-
   // Reset success and error message
   const resetMessages = () => {
     setError(null);
@@ -99,7 +98,7 @@ export function FormSection() {
     }
     try {
       const response = sectionId
-        ? await updateSection(formData.id, { name: formData.name, featured: formData.featured }) // Update
+        ? await updateSection(formData.id, { name: formData.name, featured: formData.featured}) // Update
         : await createSection(formData); // Create
 
       console.log("Réponse de l'API :", response);

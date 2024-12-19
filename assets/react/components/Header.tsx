@@ -97,13 +97,13 @@ export const Header: React.FC = () => {
               </li>
             ))}
             <li className="nav-item">
-              <Link to="/dashboard" className="nav-link link-body-emphasis px-2">
-                Espace Admin
+              <Link to="/galerie" className="nav-link link-body-emphasis px-2">
+                Galerie
               </Link>
             </li>
             <li className="nav-item">
-              <Link to="/about" className="nav-link link-body-emphasis px-2">
-                À propos
+              <Link to="/dashboard" className="nav-link link-body-emphasis px-2">
+                Espace Admin
               </Link>
             </li>
           </ul>

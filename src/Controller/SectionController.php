@@ -84,7 +84,6 @@ class SectionController extends AbstractController
 
         $submittedData = [
             'name' => $request->get('name'),
-            'articles' => $request->get('articles', []),
         ];
 
         $form = $this->createForm(SectionType::class, $section);
@@ -92,19 +91,35 @@ class SectionController extends AbstractController
 
         if ($form->isSubmitted() && $form->isValid()) {
             // Retirer les anciens articles non inclus dans la nouvelle soumission
-            foreach ($section->getArticles() as $existingArticle) {
-                if (!in_array($existingArticle->getId(), $submittedData['articles'])) {
-                    $existingArticle->setSection(null);
-                }
-            }
+            if ($request->request->has('articles')) {
+                $submittedArticles = $request->request->get('articles', []);
 
-            // Associer les nouveaux articles soumis
-            foreach ($submittedData['articles'] as $articleId) {
-                $article = $entityManager->getRepository(Article::class)->find($articleId);
-                if (!$article) {
-                    return new JsonResponse("L'article ID $articleId n'existe pas.", 400);
+                // Retirer les articles non inclus dans la soumission
+                $submittedArticles = is_array($submittedArticles)
+                ? $submittedArticles
+                : json_decode($submittedArticles, true);
+
+                if (!is_array($submittedArticles)) {
+                    throw new \InvalidArgumentException("Le champ 'articles' doit être un tableau ou un JSON valide.");
                 }
-                $article->setSection($section);
+
+                foreach ($section->getArticles() as $existingArticle) {
+                    if (!in_array($existingArticle->getId(), $submittedArticles)) {
+                        $existingArticle->setSection(null);
+                    }
+                }
+
+                // Ajouter les nouveaux articles
+                foreach ($submittedArticles as $articleId) {
+                    $article = $entityManager->getRepository(Article::class)->find($articleId);
+                    if ($article) {
+                        if ($article->getSection() !== $section) {
+                            $article->setSection($section);
+                        }
+                    } else {
+                        return new JsonResponse("L'article ID $articleId n'existe pas.", 400);
+                    }
+                }
             }
 
             $entityManager->flush();

@@ -13,7 +13,7 @@ export function FormFeaturedSections() {
     fetchSection()
       .then((data) => {
         setSections(data);
-        const featured = data.filter((section) => section.featured).map((section) => section.id);
+        const featured = data.filter((section: Section) => section.featured).map((section: Section) => section.id);
         setFeaturedSections(featured);
       })
       .catch((error) => {
@@ -39,6 +39,7 @@ export function FormFeaturedSections() {
         updateSection(section.id, {
           name: section.name,
           featured: featuredSections.includes(section.id),
+         
         })
       );
 
