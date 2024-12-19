@@ -38,7 +38,7 @@ export function FormArticle() {
   //Load all sections 
   useEffect(() => {
     fetchArticles().then((articles) => {
-      console.log("Articles fetched:", articles)
+    
       setArticles(articles)
     })
       .catch(console.error);
@@ -51,7 +51,7 @@ export function FormArticle() {
   };
   const handleDelete = async (sectionId: number) => {
     if (!sectionId) {
-      alert("Aucun ID de section fourni");
+      alert("Aucun ID d'article sélectionné");
       return;
     }
     try {
@@ -118,7 +118,7 @@ export function FormArticle() {
         ...formData,
         image: imageId ? { id: Number(imageId) } : undefined,
       };
-      console.log("Article Data:", articleData);
+      
       if (articleId) {
         await updateArticle(articleId, articleData);
         setSuccessMessage("Article mis à jour !");
@@ -128,7 +128,8 @@ export function FormArticle() {
       }
 
       setFormData({ id: 0, title: "", author: "", text: "", sectionId: 0 });
-      setFile(null);
+      setTimeout(() => 
+      setFile(null), 3000);
       setPreviewImage(null);
       setArticles(await fetchArticles());
     } catch (err) {
@@ -236,7 +237,7 @@ export function FormArticle() {
             checked={sectionChangeMode}
             onChange={() => setSectionChangeMode(!sectionChangeMode)}
           />
-          <label htmlFor="delete-mode">Changer l'article de section</label>
+          <label htmlFor="section-change-mode">Changer l'article de section</label>
         </div>
         {sectionChangeMode && (
           <div className="d-flex flex-column align-items-center">
@@ -262,12 +263,14 @@ export function FormArticle() {
             </select>
           </div>
         )}
-        <button type="submit" className="btn btn-primary rounded-5">
-          {deleteMode
-            ? "Confirmer la suppression"
-            : articleId
-              ? "Mettre à jour"
-              : "Créer"}
+
+{deleteMode && (
+          <button type="button" className="btn btn-danger"  onClick={() => handleDelete(articleId)}>
+            Supprimer l'article
+          </button>
+        )}
+         <button type="submit" className="btn btn-primary rounded-5">
+          {articleId ? "Mettre à jour" : "Créer"}
         </button>
       </form>
     </div>

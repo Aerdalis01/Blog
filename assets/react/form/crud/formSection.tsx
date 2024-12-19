@@ -7,6 +7,7 @@ export function FormSection() {
   const [formData, setFormData] = useState<Section>({
     id: 0,
     name: '',
+    featured: false,
   });
   const [sections, setSections] = useState<Section[]>([]);
   const [sectionId, setSectionId] = useState<number | null>(
@@ -38,27 +39,16 @@ export function FormSection() {
 
 
   useEffect(() => {
-    // Charger les données de la section sélectionnée pour la mise à jour
     if (sectionId !== null) {
-      fetch(`/api/section/${sectionId}`)
-        .then((response) => {
-          if (!response.ok) {
-            throw new Error("Erreur lors du chargement de la section.");
-          }
-          return response.json();
-        })
-        .then((data) => {
-          setFormData({
-            id: data.id || 0,
-            name: data.name || "",
-          });
-        })
-        .catch((error) => {
-          console.error("Erreur lors du chargement des données de la section :", error);
-          setError("Impossible de charger la section sélectionnée.");
-        });
+      const selectedSection = sections.find((section) => section.id === sectionId);
+      if (selectedSection) {
+        setFormData(selectedSection);
+      }
+    } else {
+      setFormData({ id: 0, name: "", featured: false });
     }
-  }, [sectionId]);
+  }, [sectionId, sections]);
+
 
   const handleDelete = async (sectionId: number) => {
     if (!sectionId) {
@@ -77,7 +67,6 @@ export function FormSection() {
     }
   };
 
-
   //Handle selection change
   const handleSelectChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const selectedId = Number(e.target.value);
@@ -88,11 +77,15 @@ export function FormSection() {
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
   ) => {
-    const { name, value } = e.target;
-    setFormData({
-      ...formData,
-      [name]: value,
-    });
+    const { name, value, type } = e.target;
+
+    // Caster e.target en HTMLInputElement pour les checkboxes
+    const isChecked = (e.target as HTMLInputElement).checked;
+
+    setFormData((prevData) => ({
+      ...prevData,
+      [name]: type === "checkbox" ? isChecked : value,
+    }));
   };
 
   //Submit form for create or update
@@ -106,12 +99,12 @@ export function FormSection() {
     }
     try {
       const response = sectionId
-        ? await updateSection(formData.id, { name: formData.name }) // Update
+        ? await updateSection(formData.id, { name: formData.name, featured: formData.featured }) // Update
         : await createSection(formData); // Create
 
       console.log("Réponse de l'API :", response);
       setSuccessMessage(sectionId ? "Section mise à jour avec succès !" : "Section créée avec succès !");
-      setFormData({ id: 0, name: "" });
+      setFormData({ id: 0, name: "", featured: false });
       setSectionId(null);
       setTimeout(() => {
         setSuccessMessage(null);
@@ -127,14 +120,21 @@ export function FormSection() {
       setError(err.message || "Erreur inconnue lors de la soumission du formulaire.");
     }
   };
+
   return (
     <div>
+      <h2>Gérer les Sections</h2>
       {error && <p style={{ color: "red" }}>{error}</p>}
       {successMessage && <p style={{ color: "green" }}>{successMessage}</p>}
-      <form onSubmit={handleSubmit}>
+
+      <form key={formData.id} onSubmit={handleSubmit}>
         <div>
-          <label htmlFor="select-section">Sélectionner une section pour modifier ou supprimer :</label>
-          <select id="select-section" onChange={handleSelectChange} value={sectionId || ""}>
+          <label htmlFor="select-section">Sélectionner une section :</label>
+          <select
+            id="select-section"
+            onChange={(e) => setSectionId(Number(e.target.value))}
+            value={sectionId || ""}
+          >
             <option value="" disabled>
               Sélectionner une section
             </option>
@@ -145,19 +145,9 @@ export function FormSection() {
             ))}
           </select>
         </div>
+
         <div>
-        <div>
-          <input
-            type="checkbox"
-            id="delete-mode"
-            checked={deleteMode}
-            onChange={() => setDeleteMode(!deleteMode)} // Activer/désactiver le mode suppression
-          />
-          <label htmlFor="delete-mode">Activer la suppression</label>
-        </div>
-        </div>
-        <div>
-          <label htmlFor="name">Nom de la section</label>
+          <label htmlFor="name">Nom de la section :</label>
           <input
             type="text"
             id="name"
@@ -168,7 +158,35 @@ export function FormSection() {
           />
         </div>
 
-        <button className="btn btn-primary rouded-5" type="submit">{deleteMode ? "Confirmer la suppression" : sectionId ? "Mettre à jour" : "Créer"}</button>
+
+        <div>
+          <input
+            type="checkbox"
+            id="featured"
+            name="featured"
+            checked={formData.featured}
+            onChange={handleChange}
+          />
+          <label htmlFor="featured">
+            {formData.featured
+              ? "Décochez pour retirer de la page principale"
+              : "Cochez pour ajouter à la page principale"}
+          </label>
+        </div>
+
+        <div>
+          <input
+            type="checkbox"
+            id="delete-mode"
+            checked={deleteMode}
+            onChange={() => setDeleteMode(!deleteMode)}
+          />
+          <label htmlFor="delete-mode">Activer le mode suppression</label>
+        </div>
+
+        <button type="submit" className="btn btn-primary mt-3">
+          {deleteMode ? "Confirmer la suppression" : sectionId ? "Mettre à jour" : "Créer"}
+        </button>
       </form>
     </div>
   );

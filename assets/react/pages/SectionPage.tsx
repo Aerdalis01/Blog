@@ -3,25 +3,22 @@ import { useEffect, useState } from 'react';
 import { fetchSection } from '../services/sectionServices';
 import { Section } from '../components/models/sectionInterface';
 import { SectionDetail } from './SectionDetail';
+import { useNavigate } from 'react-router-dom';
 
 
 
 export const SectionPage = () => {
   const [sections, setSections] = useState<Section[]>([]);
   const [sectionId, setSectionId] = useState<number | null>(null);
+  const navigate = useNavigate();
+
   useEffect (() => {
     fetchSection().then(setSections).catch(console.error);
   }, []);
 
   const handleSectionClick = (id: number) => {
-    setSectionId(id);
-  }
-  const handleBack = (id :number) => {
-    setSectionId(null);
-  }
-  if (sectionId) {
-    return <SectionDetail sectionId={sectionId} onBack={handleBack}/>
-  }
+    navigate(`/section/${id}`);
+  };
   
   return (
 

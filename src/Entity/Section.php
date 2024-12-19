@@ -24,6 +24,10 @@ class Section
     #[Groups(['section'])]
     private ?string $name = null;
 
+    #[ORM\Column(type: 'boolean')]
+    #[Groups(['section'])]
+    private bool $featured = false;
+
     #[ORM\Column]
     private ?\DateTimeImmutable $createdAt = null;
 
@@ -33,7 +37,7 @@ class Section
     /**
      * @var Collection<int, Article>
      */
-    #[ORM\OneToMany(targetEntity: Article::class, mappedBy: 'section', cascade: ['remove'], orphanRemoval: true)]
+    #[ORM\OneToMany(targetEntity: Article::class, mappedBy: 'section', cascade: ['remove'])]
     #[JoinColumn(nullable: true)]
     #[Groups(['section'])]
     private ?Collection $articles = null;
@@ -62,6 +66,18 @@ class Section
     public function setName(string $name): static
     {
         $this->name = $name;
+
+        return $this;
+    }
+
+    public function isFeatured(): bool
+    {
+        return $this->featured;
+    }
+
+    public function setFeatured(bool $featured): self
+    {
+        $this->featured = $featured;
 
         return $this;
     }

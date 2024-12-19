@@ -10,9 +10,12 @@ import { HomePage } from './react/pages/HomePage';
 import { DashboardPage } from './react/pages/DashboardPage';
 import { SectionPage } from './react/pages/SectionPage';
 import { GaleriePage } from './react/pages/GaleriePage';
+import { ArticleDetail } from './react/pages/ArticleDetail';
+import { SectionDetail } from './react/pages/SectionDetail';
+
 
 const App: React.FC = () => {
-    console.log("Rendering App...");
+
     return (
         <Router>
             <Header />
@@ -21,6 +24,9 @@ const App: React.FC = () => {
                 <Route path="/section" element={<SectionPage />} />
                 <Route path="/galerie" element={<GaleriePage />} />
                 <Route id='#dashboard' path="/dashboard" element={<DashboardPage />} />
+                <Route path="/section/:sectionId" element={<SectionDetail  />} />
+                <Route path="/article/:articleId" element={<ArticleDetail />} />
+                
             </Routes>
         </Router>
     );
@@ -28,7 +34,6 @@ const App: React.FC = () => {
 
 
 const rootElement = document.getElementById("root");
-console.log("Root element:", rootElement);
 
 if (rootElement) {
     const root = createRoot(rootElement);

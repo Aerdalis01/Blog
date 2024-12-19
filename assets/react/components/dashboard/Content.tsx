@@ -2,11 +2,13 @@ import React, { useState } from "react";
 import { FormSection } from "../../form/crud/formSection";
 import { FormArticle } from "../../form/crud/FormArticle";
 import { CommentModerateReporting } from "../../form/CommentModeration";
+import { FormFeaturedSections } from "../../form/FormFeaturedSection";
 
 export const Content: React.FC<{ section: string }> = ({ section }) => {
   const [crudAction, setCrudAction] = useState<string>("");
   const handleSelectChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
-    setCrudAction(event.target.value);
+    const newValue = event.target.value;
+    setCrudAction(newValue);
   };
   const shouldShowHeader = !(
     section === "comment"
@@ -16,14 +18,16 @@ export const Content: React.FC<{ section: string }> = ({ section }) => {
     switch (section) {
       case "section":
         switch (crudAction) {
-          case "create or edit":
+          case "createOrEdit":
             return <FormSection />;
+          case "featured":
+            return <FormFeaturedSections />;
           default:
             return <p>Veuillez sélectionner une action pour les sections</p>;
         }
       case "article":
         switch (crudAction) {
-          case "create or edit":
+          case "createOrEdit":
             return <FormArticle />;
           default:
             return <p>Veuillez sélectionner une action pour les articles</p>;
@@ -47,7 +51,7 @@ export const Content: React.FC<{ section: string }> = ({ section }) => {
             <h2>
               Gestion des{" "}
               {section === "section"
-                ? "Services"
+                ? "Sections"
                 : section === "article"
                   ? "Articles"
                   : ""}
@@ -66,8 +70,10 @@ export const Content: React.FC<{ section: string }> = ({ section }) => {
                   onChange={handleSelectChange}
                 >
                   <option value="">Choisissez une action</option>
-                  <option value="create or edit">Créer / modifier / supprimer un(e) {section}</option>
-
+                  <option value="createOrEdit">Créer / modifier / supprimer un(e) {section}</option>
+                  {["section"].includes(section) && (
+        <option value="featured">Choisissez les éléments à afficher sur la page principale</option>
+      )}
                 </select>
               </div>
             )}

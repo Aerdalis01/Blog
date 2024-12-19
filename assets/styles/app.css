@@ -2,29 +2,40 @@
 .html{
     font-size: 1.1rem;
 }
+
+/*Header*/
+.header{
+    position: relative;
+}
+.nav-connexion{
+    position:absolute;
+    right: 1%;
+    top: 1%;
+}
+
 /*Dashboard*/
 .dashboard-container {
     height: 90svh;
 }
 
-
 /* HomePage*/
 .home-page {
-    height: 90svh;
-    
+    min-height: 90svh;  
+    height: auto;
 }
+.article{
+    background-color: rgb(209, 209, 209) !important;
+}
+
 
 /* Section*/
 .section-page {
     position: relative;
     min-height: 90svh;
+    height: auto;
 }
-.section-name{
-    position:absolute;
-    top:2%;
-    left: 50%;
-    transform: translate(-50%);
-}
+
+
 /* Article */
 
 
@@ -36,14 +47,9 @@
     width: 80%;
 }
 
+
 /* Button*/
 
-.btn-onback {
-    position:absolute;
-    top: 2%;
-    left: 2%;
-    z-index: 1000;
-}
 .btn-moderation{
     position: absolute;
     top: 2%;

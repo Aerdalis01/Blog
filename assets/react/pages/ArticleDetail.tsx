@@ -6,19 +6,22 @@ import Accordion from 'react-bootstrap/Accordion';
 import { fetchCommentAndArticle, updateComment } from '../services/commentServices';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faEdit } from '@fortawesome/free-solid-svg-icons';
+import { useParams, useNavigate } from "react-router-dom";
+import { fetchArticle } from '../services/articleServices';
 
-interface ArticleDetailProps {
-  articleId: number;
-  onBack: (id: number) => void;
-}
 
-export const ArticleDetail: React.FC<ArticleDetailProps> = ({ articleId, onBack }) => {
+export const ArticleDetail: React.FC = () => {
   const [article, setArticle] = useState<Article | null>(null);
   const [loading, setLoading] = useState(true);
   const [comments, setComments] = useState<Comment[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [editingCommentId, setEditingCommentId] = useState<number | null>(null);
-  const [updatedText, setUpdatedText] = useState<string>(''); // 
+  const [updatedText, setUpdatedText] = useState<string>('');
+  const { articleId } = useParams<{ articleId: string }>();
+  const navigate = useNavigate();
+
+ 
+
 
   const handleFlagComment = async (id: number) => {
     try {
@@ -43,7 +46,7 @@ export const ArticleDetail: React.FC<ArticleDetailProps> = ({ articleId, onBack 
       console.log('Commentaire mis à jour avec succès');
       setEditingCommentId(null);
       setUpdatedText('');
-      const updatedComments = await fetchCommentAndArticle(articleId);
+      const updatedComments = await fetchCommentAndArticle(Number(articleId));
       setComments(updatedComments);
     } catch (err) {
       console.error('Erreur lors de la mise à jour du commentaire', err);
@@ -58,7 +61,7 @@ export const ArticleDetail: React.FC<ArticleDetailProps> = ({ articleId, onBack 
   useEffect(() => {
     const loadComments = async () => {
       try {
-        const fetchedComments = await fetchCommentAndArticle(articleId);
+        const fetchedComments = await fetchCommentAndArticle(Number(articleId));
         setComments(fetchedComments);
       } catch (error) {
         console.error("Erreur lors du chargement des commentaires :", error);
@@ -70,42 +73,37 @@ export const ArticleDetail: React.FC<ArticleDetailProps> = ({ articleId, onBack 
   }, [articleId]);
 
   useEffect(() => {
-    const fetchArticle = async () => {
+    const loadArticle = async () => {
       try {
-        const response = await fetch(`/api/article/${articleId}`);
-        if (!response.ok) throw new Error('Erreur lors de la récupération de l\'article');
-
-        const data = await response.json();
-
+        if (!articleId) throw new Error("articleId non défini.");
+        const id = parseInt(articleId, 10);
+        if (isNaN(id)) throw new Error("L'ID de la section n'est pas un nombre valide.");
+        console.log("ID de la section :", id);
+        console.log(`URL appelée : /api/section/${id}`);
+        const data = await fetchArticle(id);
         setArticle(data);
-      } catch (error) {
-        console.error(error);
+      } catch (err) {
+        console.error(err);
+        setError("Erreur lors de la récupération de l\'article.");
       } finally {
         setLoading(false);
       }
     };
-
-    fetchArticle();
+    loadArticle();
   }, [articleId]);
 
   if (loading) return <p>Chargement...</p>;
-
-  if (!article) {
-    return (
-      <div>
-        <p>Chargement ou section introuvable...</p>
-        <button onClick={() => onBack(articleId)}>Retour à la section</button>
-      </div>
-    );
-  }
+  if (error) return <p>{error}</p>;
+  if (!article) return <p>Aucun article trouvé.</p>;
+   
 
   return (
     <section className="section-page container-fluid d-flex flex-column align-items-center justify-content-around text-center">
-      <div >
-        <h1 className='section-name'>{article.title}</h1>
-        <button className="btn btn-secondary btn-onback mx-auto" onClick={() => onBack(articleId)}>
-          Retour à la section
+        <button className="btn btn-secondary btn-onback mx-auto" onClick={() => navigate(-1)}>
+          Retour
         </button>
+      <div >
+        <h1 className='section-name mt-5 mt-md-0'>{article.title}</h1>
         <div className='container-fluid w-100'>
           <div className='row row-cols-12'>
             <div className="card container-fluid article col-12">
@@ -123,7 +121,7 @@ export const ArticleDetail: React.FC<ArticleDetailProps> = ({ articleId, onBack 
                         <p>Aucune image disponible</p>
                       )}
                     </div>
-                    <article className="card-text text-dark">{article.text}</article>
+                    <article className="card-text text-dark w-100">{article.text}</article>
                     <div className='d-flex flex-row justify-content-around'>
                       <p>Auteur : {article.author}</p>
                       <p>Créé le : {new Date(article.createdAt).toLocaleDateString()}</p>

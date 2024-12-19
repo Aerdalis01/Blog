@@ -16,28 +16,17 @@ class SectionRepository extends ServiceEntityRepository
         parent::__construct($registry, Section::class);
     }
 
-    //    /**
-    //     * @return Section[] Returns an array of Section objects
-    //     */
-    //    public function findByExampleField($value): array
-    //    {
-    //        return $this->createQueryBuilder('s')
-    //            ->andWhere('s.exampleField = :val')
-    //            ->setParameter('val', $value)
-    //            ->orderBy('s.id', 'ASC')
-    //            ->setMaxResults(10)
-    //            ->getQuery()
-    //            ->getResult()
-    //        ;
-    //    }
+   
 
-    //    public function findOneBySomeField($value): ?Section
-    //    {
-    //        return $this->createQueryBuilder('s')
-    //            ->andWhere('s.exampleField = :val')
-    //            ->setParameter('val', $value)
-    //            ->getQuery()
-    //            ->getOneOrNullResult()
-    //        ;
-    //    }
+    public function findFeaturedSections(): array
+    {
+        return $this->createQueryBuilder('s')
+        ->addSelect('a') // Charger les articles
+        ->leftJoin('s.articles', 'a')
+        ->where('s.featured = :featured')
+        ->setParameter('featured', true)
+        ->orderBy('a.createdAt', 'DESC') // Trier les articles par date de création
+        ->getQuery()
+        ->getResult();
+    }
 }

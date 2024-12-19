@@ -7,6 +7,7 @@ use App\Entity\Comment;
 use App\Entity\Image;
 use App\Entity\Section;
 use App\Form\ArticleType;
+use App\Repository\ArticleRepository;
 use App\Service\ImageService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -35,7 +36,7 @@ class ArticleController extends AbstractController
         return new JsonResponse($data, 200, [], true);
     }
 
-    #[Route('/{id}', name: 'show', methods: ['GET'])]
+    #[Route('/{id<\d+>}', name: 'show', methods: ['GET'])]
     public function show(int $id): JsonResponse
     {
         $article = $this->em->getRepository(Article::class)->find($id);
@@ -139,7 +140,7 @@ class ArticleController extends AbstractController
         return new JsonResponse('Erreur lors de la modification de la section', 404, []);
     }
 
-    #[Route('/{id}', name: 'delete', methods: ['DELETE'])]
+    #[Route('/delete/{id}', name: 'delete', methods: ['DELETE'])]
     public function delete(int $id): JsonResponse
     {
         $article = $this->em->getRepository(Article::class)->find($id);
@@ -172,5 +173,27 @@ class ArticleController extends AbstractController
         $comments = $em->getRepository(Comment::class)->findBy(['isFlagged' => true]);
 
         return $this->json($comments, 200, [], ['groups' => 'comment:read']);
+    }
+
+    #[Route('/latest-article', name: 'latest_article', methods: ['GET'])]
+    public function getLatestArticle(ArticleRepository $articleRepository, SerializerInterface $serializer): JsonResponse
+    {
+        $latestArticle = $articleRepository->findLatestArticle();
+        $data = $serializer->serialize($latestArticle, 'json', ['groups' => 'article']);
+
+        return new JsonResponse($data, 200, [], true);
+    }
+
+    #[Route('/latest-article-by-section/{id}', name: 'latest_article_by_section', methods: ['GET'])]
+    public function getLatestArticleBySection(
+        int $id,
+        ArticleRepository $articleRepository,
+        SerializerInterface $serializer
+    ): JsonResponse {
+        $latestArticleBySection = $articleRepository->findLatestArticleBySectionId($id);
+
+        $data = $serializer->serialize($latestArticleBySection, 'json', ['groups' => 'section']);
+
+        return new JsonResponse($data, 200, [], true);
     }
 }

@@ -2,8 +2,10 @@
 
 namespace App\Controller;
 
+use App\Entity\Article;
 use App\Entity\Section;
 use App\Form\SectionType;
+use App\Repository\SectionRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -32,7 +34,7 @@ class SectionController extends AbstractController
         return new JsonResponse($data, 200, [], true);
     }
 
-    #[Route('/{id}', name: 'show', methods: ['GET'])]
+    #[Route('/{id<\d+>}', name: 'show', methods: ['GET'])]
     public function show(int $id): JsonResponse
     {
         $sections = $this->em->getRepository(Section::class)->find($id);
@@ -51,11 +53,13 @@ class SectionController extends AbstractController
     {
         $section = new Section();
         $name = $request->request->get('name');
+        $featured = $request->request->get('featured');
         if (!$name) {
             return new JsonResponse(['error' => 'Le champ "name" est requis.'], 400);
         }
 
         $section->setName($name);
+        $section->setFeatured($featured);
         $entityManager->persist($section);
         $entityManager->flush();
 
@@ -72,17 +76,49 @@ class SectionController extends AbstractController
     #[Route('/{id}/edit', name: 'edit', methods: ['GET', 'POST'], requirements: ['id' => '\d+'])]
     public function edit(Request $request, Section $section, EntityManagerInterface $entityManager): JsonResponse
     {
-        $form = $this->createForm(SectionType::class, $section);
+        $featured = $request->request->get('featured');
 
-        $form->submit(['name' => $request->get('name')]);
-
-        if ($form->isSubmitted() && $form->isValid()) {
-            $entityManager->flush();
-
-            return new JsonResponse('La section a été modifié avec succès.', 201, []);
+        if ($featured !== null) {
+            $section->setFeatured(filter_var($featured, FILTER_VALIDATE_BOOLEAN));
         }
 
-        return new JsonResponse('Erreur lors de la modification de la section', 400, []);
+        $submittedData = [
+            'name' => $request->get('name'),
+            'articles' => $request->get('articles', []),
+        ];
+
+        $form = $this->createForm(SectionType::class, $section);
+        $form->submit($submittedData, false);
+
+        if ($form->isSubmitted() && $form->isValid()) {
+            // Retirer les anciens articles non inclus dans la nouvelle soumission
+            foreach ($section->getArticles() as $existingArticle) {
+                if (!in_array($existingArticle->getId(), $submittedData['articles'])) {
+                    $existingArticle->setSection(null);
+                }
+            }
+
+            // Associer les nouveaux articles soumis
+            foreach ($submittedData['articles'] as $articleId) {
+                $article = $entityManager->getRepository(Article::class)->find($articleId);
+                if (!$article) {
+                    return new JsonResponse("L'article ID $articleId n'existe pas.", 400);
+                }
+                $article->setSection($section);
+            }
+
+            $entityManager->flush();
+
+            return new JsonResponse('La section a été modifiée avec succès.', 201);
+        }
+
+        // Gestion des erreurs de formulaire
+        $errors = [];
+        foreach ($form->getErrors(true) as $error) {
+            $errors[] = $error->getMessage();
+        }
+
+        return new JsonResponse(['errors' => $errors], 400);
     }
 
     #[Route('/delete/{id}', name: 'app_section_delete', methods: ['DELETE'])]
@@ -105,5 +141,15 @@ class SectionController extends AbstractController
         } catch (\Exception $e) {
             return new JsonResponse(['status' => 'error', 'message' => 'Erreur lors de la suppression : '.$e->getMessage()], 500);
         }
+    }
+
+    #[Route('/featured', name: 'api_sections_featured', methods: ['GET'])]
+    public function getFeaturedSections(SectionRepository $sectionRepository, SerializerInterface $serializer, Request $request): JsonResponse
+    {
+        $featuredSections = $sectionRepository->findFeaturedSections();
+
+        $data = $serializer->serialize($featuredSections, 'json', ['groups' => 'section']);
+
+        return new JsonResponse($data, 200, [], true);
     }
 }

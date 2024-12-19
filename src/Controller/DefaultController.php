@@ -8,7 +8,8 @@ use Symfony\Component\Routing\Attribute\Route;
 
 class DefaultController extends AbstractController
 {
-    #[Route('/{reactRouting}', name: 'home', methods: ['GET'])]
+    // Capturé tous ce qui suit /, '^(?!api).*$' = expression régulière pour capturer toutes les routes sauf api
+    #[Route('/{any}', name: 'react_routes', requirements: ['any' => '^(?!api).*$'], methods: ['GET'])]
     public function index(): Response
     {
         return $this->render('/index.html.twig');

@@ -46,4 +46,6 @@
     npm install mdb-react-ui-kit
     npm install react-bootstrap bootstrap
     npm install react-router-dom
+    npm install bad-words
+
 

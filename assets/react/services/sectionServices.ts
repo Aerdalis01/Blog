@@ -9,6 +9,14 @@ export const fetchSection = async () => {
   const data = await res.json();
   return data;
 };
+export const fetchSectionId = async (id: number ) => {
+  const res = await fetch(`/api/section/${id}`);
+  if (!res.ok) {
+    throw new Error('Erreur lors du chargement de la section');
+  }
+  const data = await res.json();
+  return data;
+};
 
 export const createSection = async (sectionData) => {
   const formData = new FormData();
@@ -24,9 +32,10 @@ export const createSection = async (sectionData) => {
   return res.json();
 };
 
-export const updateSection = async (id: number, sectionData: { name: string } ) => {
+export const updateSection = async (id: number, sectionData: { name: string, featured: boolean } ) => {
   const formData = new FormData();
   formData.append("name", sectionData.name);
+  formData.append("featured", sectionData.featured.toString()); 
   const res = await fetch(`/api/section/${id}/edit`, {
     method: 'POST',  
     body: formData, 
@@ -38,7 +47,7 @@ export const updateSection = async (id: number, sectionData: { name: string } ) 
 };
 
 export const deleteSection = async (sectionId: number) => {
-  const res = await fetch(`/api/section/${sectionId}/delete`, { method: 'DELETE' });
+  const res = await fetch(`/api/section/delete/${sectionId}`, { method: 'DELETE' });
   if (!res.ok) {
     throw new Error('Erreur lors de la suppression de la race');
   }
