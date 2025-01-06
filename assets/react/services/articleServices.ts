@@ -1,4 +1,9 @@
-
+const getAuthHeaders = () => {
+  const token = localStorage.getItem('token');
+  return {
+    'Authorization': `Bearer ${token}`,
+  };
+};
 // Récupération des articles
 export const fetchArticles = async () => {
   const res = await fetch('/api/article/');
@@ -39,6 +44,7 @@ export const createArticle = async (articleData: {
 
   const res = await fetch('/api/article/new', {
     method: 'POST',
+    headers: getAuthHeaders(),
     body: formData,
   });
   if (!res.ok) {
@@ -72,6 +78,7 @@ export const updateArticle = async (
 
   const res = await fetch(`/api/article/${id}/edit`, {
     method: 'POST',
+    headers: getAuthHeaders(),
     body: formData,
   });
   if (!res.ok) {
@@ -82,7 +89,7 @@ export const updateArticle = async (
 
 // Suppression d'un article
 export const deleteArticle = async (articleId: number) => {
-  const res = await fetch(`/api/article/delete/${articleId}`, { method: 'DELETE' });
+  const res = await fetch(`/api/article/delete/${articleId}`, { method: 'DELETE', headers: getAuthHeaders(), });
   if (!res.ok) {
     throw new Error('Erreur lors de la suppression de l\'article');
   }

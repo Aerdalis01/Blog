@@ -1,5 +1,6 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
+import { getUserRoles } from "../../services/loginServices";
 
 
 
@@ -9,7 +10,19 @@ interface SidebarProps {
 
 export const Sidebar: React.FC<SidebarProps> = ({ onSectionChange }) => {
   const [isClick, setIsClick] = useState(false);
+  const [roles, setRoles] = useState<string[]>([])
+  const hasRole = (roles: string[], roleToCheck: string): boolean => {
+    return roles.includes(roleToCheck);
+  };
 
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+
+    const userRoles = getUserRoles();
+    setRoles(userRoles);
+  }, []);
+  const isAdmin = hasRole(roles, 'ROLE_ADMIN');
+  const isModerator = hasRole(roles, 'ROLE_MODERATOR');
   const toggleSidebar = () => {
     setIsClick(!isClick);
   };
@@ -44,26 +57,36 @@ export const Sidebar: React.FC<SidebarProps> = ({ onSectionChange }) => {
                     data-bs-parent="#accordionAdmin"
                   >
                     <div className="accordion-body">
-                      <li className="nav-item">
-                        <Link className="nav-link" to="#" onClick={() => onSectionChange("section")}>
-                          Sections
-                        </Link>
-                      </li>
-                      <li className="nav-item">
-                        <Link className="nav-link" to="#" onClick={() => onSectionChange("article")}>
-                          Articles
-                        </Link>
-                      </li>
-                      <li className="nav-item">
-                        <Link className="nav-link" to="#" onClick={() => onSectionChange("comment")}>
-                          Commentaires
-                        </Link>
-                      </li>
-                      <li className="nav-item">
-                        <Link className="nav-link" to="#" onClick={() => onSectionChange("register")}>
-                          Créer un compte utilisateur
-                        </Link>
-                      </li>
+                      {isAdmin && (
+                        <li className="nav-item">
+                          <Link className="nav-link" to="#" onClick={() => onSectionChange("section")}>
+                            Sections
+                          </Link>
+                        </li>
+                      )}
+
+                      {(isAdmin || isModerator) && (
+                        <>
+                          <li className="nav-item">
+                            <Link className="nav-link" to="#" onClick={() => onSectionChange("article")}>
+                              Articles
+                            </Link>
+                          </li>
+                          <li className="nav-item">
+                            <Link className="nav-link" to="#" onClick={() => onSectionChange("comment")}>
+                              Commentaires
+                            </Link>
+                          </li>
+                        </>
+                      )}
+
+                      {isAdmin && (
+                        <li className="nav-item">
+                          <Link className="nav-link" to="#" onClick={() => onSectionChange("user")}>
+                            Utilisateurs
+                          </Link>
+                        </li>
+                      )}
                     </div>
                   </div>
                 </div>

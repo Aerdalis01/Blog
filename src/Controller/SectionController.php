@@ -6,7 +6,9 @@ use App\Entity\Article;
 use App\Entity\Section;
 use App\Form\SectionType;
 use App\Repository\SectionRepository;
+use App\Service\AuthenticationService;
 use Doctrine\ORM\EntityManagerInterface;
+use Lexik\Bundle\JWTAuthenticationBundle\Services\JWTTokenManagerInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -20,7 +22,9 @@ class SectionController extends AbstractController
     public function __construct(
         private EntityManagerInterface $em,
         private SerializerInterface $serializer,
-        private LoggerInterface $logger
+        private LoggerInterface $logger,
+        private AuthenticationService $authService,
+        private JWTTokenManagerInterface $jwtManager
     ) {
     }
 
@@ -51,6 +55,17 @@ class SectionController extends AbstractController
     #[Route('/new', name: 'new', methods: ['GET', 'POST'])]
     public function new(Request $request, EntityManagerInterface $entityManager): JsonResponse
     {
+        $user = $this->getUser();
+
+        if (!$user) {
+            return new JsonResponse(['error' => 'Utilisateur non authentifié.'], 401);
+        }
+        $roles = $user->getRoles(); // Récupère les rôles de l'utilisateur
+
+        if (!in_array('ROLE_ADMIN', $roles, true)) {
+            return new JsonResponse(['error' => 'Accès interdit : rôle requis : ROLE_ADMIN.'], 403);
+        }
+
         $section = new Section();
         $name = $request->request->get('name');
         $featured = $request->request->get('featured');
@@ -60,6 +75,15 @@ class SectionController extends AbstractController
 
         $section->setName($name);
         $section->setFeatured($featured);
+
+        if (!$name) {
+            return new JsonResponse(['error' => 'Le champ "name" est requis.'], 400);
+        }
+
+        if (!is_bool(filter_var($featured, FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE))) {
+            return new JsonResponse(['error' => 'Le champ "featured" doit être un booléen.'], 400);
+        }
+
         $entityManager->persist($section);
         $entityManager->flush();
 
@@ -76,6 +100,16 @@ class SectionController extends AbstractController
     #[Route('/{id}/edit', name: 'edit', methods: ['GET', 'POST'], requirements: ['id' => '\d+'])]
     public function edit(Request $request, Section $section, EntityManagerInterface $entityManager): JsonResponse
     {
+        $user = $this->getUser();
+
+        if (!$user) {
+            return new JsonResponse(['error' => 'Utilisateur non authentifié.'], 401);
+        }
+        $roles = $user->getRoles(); // Récupère les rôles de l'utilisateur
+
+        if (!in_array('ROLE_ADMIN', $roles, true)) {
+            return new JsonResponse(['error' => 'Accès interdit : rôle requis : ROLE_ADMIN.'], 403);
+        }
         $featured = $request->request->get('featured');
 
         if ($featured !== null) {
@@ -139,6 +173,16 @@ class SectionController extends AbstractController
     #[Route('/delete/{id}', name: 'app_section_delete', methods: ['DELETE'])]
     public function delete(int $id): JsonResponse
     {
+        $user = $this->getUser();
+
+        if (!$user) {
+            return new JsonResponse(['error' => 'Utilisateur non authentifié.'], 401);
+        }
+        $roles = $user->getRoles(); // Récupère les rôles de l'utilisateur
+
+        if (!in_array('ROLE_ADMIN', $roles, true)) {
+            return new JsonResponse(['error' => 'Accès interdit : rôle requis : ROLE_ADMIN.'], 403);
+        }
         $section = $this->em->getRepository(Section::class)->find($id);
 
         if (!$section) {

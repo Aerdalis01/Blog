@@ -43,8 +43,8 @@ export const GaleriePage = () => {
 
         {images.map((image) => (
           image.url ? (
-            <div className='col-12 col-md-6'>
-            <div key={image.id} className='card article'>
+            <div key={image.id} className='col-12 col-md-6'>
+              <div  className='card article'>
               <div className='card-body'>
                 <div className="col d-flex align-items-center justify-content-center">
                   <div className="article-content text-center">

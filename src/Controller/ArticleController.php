@@ -45,7 +45,7 @@ class ArticleController extends AbstractController
             return new JsonResponse(['error' => 'Aucune section trouve.'], 404);
         }
 
-        $data = $this->serializer->serialize($article, 'json', ['groups' => 'article']);
+        $data = $this->serializer->serialize($article, 'json', ['groups' => 'article', 'comment']);
 
         return new JsonResponse($data, 200, [], true);
     }
@@ -53,6 +53,12 @@ class ArticleController extends AbstractController
     #[Route('/new', name: 'new', methods: ['GET', 'POST'])]
     public function new(Request $request, EntityManagerInterface $entityManager): JsonResponse
     {
+        $user = $this->getUser();
+
+        if (!$user) {
+            return new JsonResponse(['error' => 'Utilisateur non authentifié.'], 401);
+        }
+
         $article = new Article();
         $sectionId = $request->get('sectionId');
         if (!$sectionId) {
@@ -93,6 +99,12 @@ class ArticleController extends AbstractController
     #[Route('/{id}/edit', name: 'edit', methods: ['GET', 'POST'])]
     public function edit(Request $request, Article $article, EntityManagerInterface $entityManager): JsonResponse
     {
+        $user = $this->getUser();
+
+        if (!$user) {
+            return new JsonResponse(['error' => 'Utilisateur non authentifié.'], 401);
+        }
+
         $sectionId = $request->get('sectionId');
         if ($sectionId) {
             $newSection = $this->em->getRepository(Section::class)->find($sectionId);
@@ -143,6 +155,17 @@ class ArticleController extends AbstractController
     #[Route('/delete/{id}', name: 'delete', methods: ['DELETE'])]
     public function delete(int $id): JsonResponse
     {
+        $user = $this->getUser();
+
+        if (!$user) {
+            return new JsonResponse(['error' => 'Utilisateur non authentifié.'], 401);
+        }
+        $roles = $user->getRoles(); // Récupère les rôles de l'utilisateur
+
+        if (!in_array('ROLE_ADMIN', $roles, true)) {
+            return new JsonResponse(['error' => 'Accès interdit : rôle requis : ROLE_ADMIN.'], 403);
+        }
+
         $article = $this->em->getRepository(Article::class)->find($id);
 
         if (!$article) {

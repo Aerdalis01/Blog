@@ -4,10 +4,11 @@ namespace App\Controller;
 
 use App\Entity\Article;
 use App\Entity\Comment;
-use App\Form\CommentType;
 use App\Service\CommentFilterService;
 use Doctrine\ORM\EntityManagerInterface;
+use Lexik\Bundle\JWTAuthenticationBundle\Services\JWTTokenManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\Finder\Exception\AccessDeniedException;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -20,7 +21,8 @@ class CommentController extends AbstractController
     public function __construct(
         private EntityManagerInterface $em,
         private SerializerInterface $serializer,
-        private CommentFilterService $commentFilter
+        private CommentFilterService $commentFilter,
+        private JWTTokenManagerInterface $jwtManager
     ) {
     }
 
@@ -50,6 +52,12 @@ class CommentController extends AbstractController
     #[Route('/new', name: 'new', methods: ['GET', 'POST'])]
     public function new(Request $request, EntityManagerInterface $entityManager): JsonResponse
     {
+        $user = $this->getUser();
+
+        if (!$user) {
+            return new JsonResponse(['error' => 'Utilisateur non authentifié.'], 401);
+        }
+
         $articleId = $request->get('articleId');
 
         $article = $entityManager->getRepository(Article::class)->find($articleId);
@@ -59,36 +67,36 @@ class CommentController extends AbstractController
         }
 
         $comment = new Comment();
-        $form = $this->createForm(CommentType::class, $comment);
+        $comment->setAuthor($user); // Associe directement l'utilisateur connecté comme auteur
+        $comment->setArticle($article);
 
+        // Nettoyer et définir le texte du commentaire
         $text = $this->commentFilter->filter($request->get('text'));
-        $formData = [
-            'text' => $text,
-            'author' => $request->get('author'),
-            'article' => $article->getId(),
-        ];
-
-        $form->submit($formData);
-        if (!$form->isValid()) {
-            return new JsonResponse([
-                'error' => 'Formulaire invalide',
-                'details' => (string) $form->getErrors(true, false),
-            ], 400);
+        if (!$text) {
+            return new JsonResponse(['error' => 'Le texte du commentaire est requis.'], 400);
         }
+        $comment->setText($text);
 
-        if ($form->isSubmitted() && $form->isValid()) {
+        // Persister le commentaire
+        try {
             $entityManager->persist($comment);
             $entityManager->flush();
 
-            return new JsonResponse('Le commentaire est créé.', 201, []);
+            return new JsonResponse(['message' => 'Commentaire créé avec succès.'], 201);
+        } catch (\Exception $e) {
+            return new JsonResponse(['error' => 'Erreur lors de la création du commentaire.'], 500);
         }
-
-        return new JsonResponse('Erreur lors de la création du commentaire', 400, []);
     }
 
-    #[Route('/{id}/edit', name: 'edit_comment', methods: ['POST'])]
+    #[Route('/{id}/edit', name: 'edit_comment', methods: ['PUT'])]
     public function edit(Request $request, Comment $comment, EntityManagerInterface $em): JsonResponse
     {
+        $this->canEditOrDelete($comment);
+        $user = $this->getUser();
+        if (!$user) {
+            return new JsonResponse(['error' => 'Utilisateur non authentifié.'], 401);
+        }
+
         $text = $request->request->get('text');
 
         if (!$text) {
@@ -107,6 +115,8 @@ class CommentController extends AbstractController
     public function delete(int $id, Request $request): JsonResponse
     {
         $comment = $this->em->getRepository(Comment::class)->find($id);
+        // Vérifiez si l'utilisateur est propriétaire ou a des droits d'administration
+        $this->canEditOrDelete($comment);
 
         if (!$comment) {
             return new JsonResponse(['status' => 'error', 'message' => 'Commentairenon trouvé'], 400);
@@ -148,6 +158,17 @@ class CommentController extends AbstractController
     #[Route('/flagged', name: 'get_flagged_comments', methods: ['GET'])]
     public function getFlaggedComments(): JsonResponse
     {
+        $user = $this->getUser();
+
+        if (!$user) {
+            return new JsonResponse(['error' => 'Utilisateur non authentifié.'], 401);
+        }
+        $roles = $user->getRoles(); // Récupère les rôles de l'utilisateur
+
+        if (!in_array('ROLE_ADMIN', $roles, true) && !in_array('ROLE_MODERATOR', $roles, true)) {
+            return new JsonResponse(['error' => "Accès interdit : vous n'avez pas l'autorisation"], 403);
+        }
+
         $flaggedComments = $this->em->getRepository(Comment::class)->findBy(['isFlagged' => true]);
 
         $data = $this->serializer->serialize($flaggedComments, 'json', ['groups' => 'comment']);
@@ -169,5 +190,14 @@ class CommentController extends AbstractController
         $this->em->flush();
 
         return new JsonResponse(['message' => 'Commentaire signalé avec succès'], 200);
+    }
+
+    private function canEditOrDelete(Comment $comment): void
+    {
+        $user = $this->getUser();
+
+        if ($comment->getAuthor() !== $user && !$this->isGranted('ROLE_ADMIN') && !$this->isGranted('ROLE_MODERATOR')) {
+            throw new AccessDeniedException('Vous n\'êtes pas autorisé à modifier ou supprimer ce commentaire.');
+        }
     }
 }

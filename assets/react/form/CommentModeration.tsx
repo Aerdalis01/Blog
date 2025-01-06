@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Comment } from '../components/models/commentInterface';
 import { deleteComment } from '../services/commentServices';
 import { Filter } from 'bad-words';
+import { getAuthHeaders } from '../services/sectionServices';
 
 const filter = new Filter();
 
@@ -41,7 +42,7 @@ export function  CommentModerateReporting() {
   useEffect(() => {
     const fetchFlaggedComments = async () => {
       try {
-        const response = await fetch(`/api/comment/flagged`);
+        const response = await fetch(`/api/comment/flagged`,{headers: getAuthHeaders(),});
         if (!response.ok) {
           throw new Error('Erreur lors de la récupération des commentaires signalés');
         }
@@ -75,7 +76,7 @@ export function  CommentModerateReporting() {
         {flaggedComments.length > 0 ? (
             flaggedComments.map((comment) => (
               <tr key={comment.id}>
-                <td>{comment.author || "Anonyme"}</td>
+                <td>{comment.authorId || "Anonyme"}</td>
                 <td>{comment.text}</td>
                 <td>
                   <button

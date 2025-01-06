@@ -12,6 +12,10 @@ import { SectionPage } from './react/pages/SectionPage';
 import { GaleriePage } from './react/pages/GaleriePage';
 import { ArticleDetail } from './react/pages/ArticleDetail';
 import { SectionDetail } from './react/pages/SectionDetail';
+import { LoginPage } from './react/components/auth/login';
+import { RegisterPage } from './react/components/auth/auth';
+import { ResetPasswordPage } from './react/pages/ResetPasswordPage';
+import { ResetPassword } from './react/components/auth/resetPassword';
 
 
 const App: React.FC = () => {
@@ -23,6 +27,10 @@ const App: React.FC = () => {
                 <Route path="/" element={<HomePage />} />
                 <Route path="/section" element={<SectionPage />} />
                 <Route path="/galerie" element={<GaleriePage />} />
+                <Route path="/login" element={<LoginPage />} />
+                <Route path="/register" element={<RegisterPage />} />
+                <Route path="/resetPassword" element={<ResetPassword />} />
+                <Route path="/reset-password/success" element={<ResetPasswordPage />} />
                 <Route id='#dashboard' path="/dashboard" element={<DashboardPage />} />
                 <Route path="/section/:sectionId" element={<SectionDetail  />} />
                 <Route path="/article/:articleId" element={<ArticleDetail />} />

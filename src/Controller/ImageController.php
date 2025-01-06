@@ -73,6 +73,7 @@ class ImageController extends AbstractController
     public function getLatestImage(ImageRepository $imageRepository, SerializerInterface $serializer): JsonResponse
     {
         $latestImage = $imageRepository->findLatestImage();
+
         $data = $serializer->serialize($latestImage, 'json', ['groups' => 'image']);
 
         return new JsonResponse($data, 200, [], true);

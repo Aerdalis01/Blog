@@ -18,10 +18,6 @@ class Comment
     #[Groups(['article', 'comment'])]
     private ?int $id = null;
 
-    #[ORM\Column(length: 70)]
-    #[Groups(['article', 'comment'])]
-    private ?string $author = null;
-
     #[ORM\Column(type: Types::TEXT)]
     #[Groups(['article', 'comment'])]
     private ?string $text = null;
@@ -36,6 +32,7 @@ class Comment
 
     #[ORM\ManyToOne(targetEntity: Article::class, inversedBy: 'comment')]
     #[ORM\JoinColumn(onDelete: 'CASCADE')]
+    #[Groups(['comment'])]
     private ?Article $article = null;
 
     #[ORM\Column(type: 'boolean', options: ['default' => false])]
@@ -44,7 +41,12 @@ class Comment
 
     #[ORM\Column(length: 20, options: ['default' => 'pending'])]
     #[Groups(['article', 'comment'])]
-    private string $moderationStatus = 'pending'; // "pending", "approved", "rejected"
+    private string $moderationStatus = 'pending';
+
+    #[ORM\ManyToOne(targetEntity: User::class)]
+    #[ORM\JoinColumn(nullable: false)]
+    #[Groups(['article', 'comment'])]
+    private ?User $author = null;
 
     #[ORM\PrePersist]
     public function setCreatedAt(): void
@@ -55,18 +57,6 @@ class Comment
     public function getId(): ?int
     {
         return $this->id;
-    }
-
-    public function getAuthor(): ?string
-    {
-        return $this->author;
-    }
-
-    public function setAuthor(string $author): static
-    {
-        $this->author = $author;
-
-        return $this;
     }
 
     public function getText(): ?string
@@ -132,5 +122,22 @@ class Comment
         $this->moderationStatus = $moderationStatus;
 
         return $this;
+    }
+
+    public function getAuthor(): ?User
+    {
+        return $this->author;
+    }
+
+    public function setAuthor(?User $author): static
+    {
+        $this->author = $author;
+
+        return $this;
+    }
+
+    public function getAuthorPseudo(): string
+    {
+        return $this->author ? $this->author->getPseudo() : 'Anonyme';
     }
 }

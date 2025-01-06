@@ -1,5 +1,10 @@
-import { FormSection } from "../form/crud/formSection";
 
+const getAuthHeaders = () => {
+  const token = localStorage.getItem('token');
+  return {
+    'Authorization': `Bearer ${token}`,
+  };
+};
 
 export const fetchComment = async () => {
   const res = await fetch('/api/comment/');
@@ -25,6 +30,7 @@ export const createComment = async (commentData) => {
   
   const res = await fetch('/api/comment/new', {
     method: 'POST',
+    headers: getAuthHeaders(),
     body: formData, 
   });
   if (!res.ok) {
@@ -37,7 +43,8 @@ export const updateComment= async (id: number, commentData: {  text: string } ) 
   const formData = new FormData();
   formData.append("text", commentData.text);
   const res = await fetch(`/api/comment/${id}/edit`, {
-    method: 'POST',  
+    method: 'PUT',
+    headers: getAuthHeaders(),  
     body: formData, 
   });
   if (!res.ok) {
@@ -47,8 +54,11 @@ export const updateComment= async (id: number, commentData: {  text: string } ) 
 };
 
 export const deleteComment = async (commentId: number) => {
-  const res = await fetch(`/api/comment/${commentId}/delete`, { method: 'DELETE' });
+  const res = await fetch(`/api/comment/${commentId}/delete`, { 
+  method: 'DELETE',
+  headers: getAuthHeaders(),
+ });
   if (!res.ok) {
-    throw new Error('Erreur lors de la suppression de la race');
+    throw new Error('Erreur lors de la suppression du commentaire');
   }
 };

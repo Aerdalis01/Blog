@@ -1,5 +1,11 @@
 import { FormSection } from "../form/crud/formSection";
 
+ export const getAuthHeaders = () => {
+  const token = localStorage.getItem('token');
+  return {
+    'Authorization': `Bearer ${token}`,
+  };
+};
 
 export const fetchSection = async () => {
   const res = await fetch('/api/section/');
@@ -21,9 +27,11 @@ export const fetchSectionId = async (id: number ) => {
 export const createSection = async (sectionData) => {
   const formData = new FormData();
   formData.append("name", sectionData.name);
+  formData.append("featured", sectionData.featured);
   
   const res = await fetch('/api/section/new', {
     method: 'POST',
+    headers: getAuthHeaders(),
     body: formData, 
   });
   if (!res.ok) {
@@ -38,7 +46,8 @@ export const updateSection = async (id: number, sectionData: { name: string, fea
   if (sectionData.featured !== undefined) formData.append("featured", sectionData.featured.toString());
   
   const res = await fetch(`/api/section/${id}/edit`, {
-    method: 'POST',  
+    method: 'POST',
+    headers: getAuthHeaders(),
     body: formData, 
   });
   if (!res.ok) {
@@ -48,8 +57,14 @@ export const updateSection = async (id: number, sectionData: { name: string, fea
 };
 
 export const deleteSection = async (sectionId: number) => {
-  const res = await fetch(`/api/section/delete/${sectionId}`, { method: 'DELETE' });
+  const res = await fetch(`/api/section/delete/${sectionId}`, {
+    method: 'DELETE',
+    headers: getAuthHeaders(),
+  });
+
   if (!res.ok) {
-    throw new Error('Erreur lors de la suppression de la race');
+    throw new Error('Erreur lors de la suppression de la section');
   }
+
+  return await res.json(); // Facultatif, si une réponse JSON est attendue
 };

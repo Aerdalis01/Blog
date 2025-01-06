@@ -8,6 +8,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faEdit } from '@fortawesome/free-solid-svg-icons';
 import { useParams, useNavigate } from "react-router-dom";
 import { fetchArticle } from '../services/articleServices';
+import { fetchCurrentUser } from '../services/userServices';
 
 
 export const ArticleDetail: React.FC = () => {
@@ -19,9 +20,20 @@ export const ArticleDetail: React.FC = () => {
   const [updatedText, setUpdatedText] = useState<string>('');
   const { articleId } = useParams<{ articleId: string }>();
   const navigate = useNavigate();
+  const [user, setUser] = useState<{ id: number; pseudo: string } | null>(null);
 
- 
+  useEffect(() => {
+    const loadUser = async () => {
+      try {
+        const data = await fetchCurrentUser();
+        setUser(data);
+      } catch (err) {
+        console.error(err.message);
+      }
+    };
 
+    loadUser();
+  }, []);
 
   const handleFlagComment = async (id: number) => {
     try {
@@ -62,6 +74,7 @@ export const ArticleDetail: React.FC = () => {
     const loadComments = async () => {
       try {
         const fetchedComments = await fetchCommentAndArticle(Number(articleId));
+        console.log("Données des commentaires récupérées :", fetchedComments);
         setComments(fetchedComments);
       } catch (error) {
         console.error("Erreur lors du chargement des commentaires :", error);
@@ -78,9 +91,8 @@ export const ArticleDetail: React.FC = () => {
         if (!articleId) throw new Error("articleId non défini.");
         const id = parseInt(articleId, 10);
         if (isNaN(id)) throw new Error("L'ID de la section n'est pas un nombre valide.");
-        console.log("ID de la section :", id);
-        console.log(`URL appelée : /api/section/${id}`);
         const data = await fetchArticle(id);
+        console.log('Article chargé', data);
         setArticle(data);
       } catch (err) {
         console.error(err);
@@ -95,13 +107,17 @@ export const ArticleDetail: React.FC = () => {
   if (loading) return <p>Chargement...</p>;
   if (error) return <p>{error}</p>;
   if (!article) return <p>Aucun article trouvé.</p>;
-   
 
+  article.comment.forEach((comment) => {
+    console.log("Comment ID:", comment.id);
+    console.log("Author ID:", comment.author?.id);
+    console.log("Author pseudo:", comment.author?.pseudo || "Anonyme");
+  });
   return (
     <section className="section-page container-fluid d-flex flex-column align-items-center justify-content-around text-center">
-        <button className="btn btn-secondary btn-onback mx-auto" onClick={() => navigate(-1)}>
-          Retour
-        </button>
+      <button className="btn btn-secondary btn-onback mx-auto" onClick={() => navigate(-1)}>
+        Retour
+      </button>
       <div >
         <h1 className='section-name mt-5 mt-md-0'>{article.title}</h1>
         <div className='container-fluid w-100'>
@@ -123,7 +139,6 @@ export const ArticleDetail: React.FC = () => {
                     </div>
                     <article className="card-text text-dark w-100">{article.text}</article>
                     <div className='d-flex flex-row justify-content-around'>
-                      <p>Auteur : {article.author}</p>
                       <p>Créé le : {new Date(article.createdAt).toLocaleDateString()}</p>
                       {article.updatedAt && (
                         <p>Mis à jour le : {new Date(article.updatedAt).toLocaleDateString()}</p>
@@ -157,9 +172,11 @@ export const ArticleDetail: React.FC = () => {
                     </Accordion>
                     <div className='comments-list container-fluid'>
                       <div className='row'>
+
                         <div className='col-12' >
                           {article.comment && article.comment.length > 0 ? (
                             article.comment.map((comment) => (
+
                               <div key={comment.id} className="comment card mb-3">
                                 <div className="card-body card-comment d-flex flex-column align-items-center justify-content-center">
                                   {editingCommentId === comment.id ? (
@@ -185,7 +202,7 @@ export const ArticleDetail: React.FC = () => {
                                     <>
                                       <p className="card-text my-5">{comment.text}</p>
                                       <p className="card-subtitle text-muted">
-                                        <em>- {comment.author || 'Anonyme'}</em>
+                                        <em>{comment.author?.pseudo || 'Anonyme'}</em>
                                       </p>
                                       <button
                                         className="btn btn-warning btn-moderation"
@@ -198,12 +215,14 @@ export const ArticleDetail: React.FC = () => {
                                         {comment.updatedAt && (
                                           <p className='mx-5'>Mis à jour le : {new Date(comment.updatedAt).toLocaleDateString()}</p>
                                         )}
-                                        <FontAwesomeIcon
-                                          className='mx-5'
-                                          icon={faEdit}
-                                          style={{ cursor: 'pointer', color: 'blue' }}
-                                          onClick={() => handleEditComment(comment)}
-                                        />
+                                         {user?.id === comment.author?.id && (
+                                          <FontAwesomeIcon
+                                            className='mx-5'
+                                            icon={faEdit}
+                                            style={{ cursor: 'pointer', color: 'blue' }}
+                                            onClick={() => handleEditComment(comment)}
+                                          />
+                                        )}
                                       </div>
                                     </>
                                   )}

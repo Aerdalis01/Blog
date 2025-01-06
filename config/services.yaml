@@ -1,29 +1,36 @@
-# This file is the entry point to configure your own services.
-# Files in the packages/ subdirectory configure your dependencies.
-
-# Put parameters here that don't need to change on each machine where the app is deployed
-# https://symfony.com/doc/current/best_practices.html#use-parameters-for-application-configuration
 parameters:
      upload_directory: '%env(UPLOAD_DIRECTORY)%'
 
 services:
-    # default configuration for services in *this* file
-    _defaults:
-        autowire: true      # Automatically injects dependencies in your services.
-        autoconfigure: true # Automatically registers your services as commands, event subscribers, etc.
 
-    # makes classes in src/ available to be used as services
-    # this creates a service per class whose id is the fully-qualified class name
+    _defaults:
+        autowire: true      
+        autoconfigure: true 
+
     App\:
         resource: '../src/'
         exclude:
             - '../src/DependencyInjection/'
             - '../src/Entity/'
             - '../src/Kernel.php'
+
     App\Service\ImageService:
             arguments:
                 $uploadDirectory: '%kernel.project_dir%/public/uploads'
    
     App\Service\CommentFilterService: ~
-    # add more service definitions when explicit configuration is needed
-    # please note that last definitions always *replace* previous ones
+
+    App\Controller\RegistrationController:
+        tags: ['controller.service_arguments']
+    App\Controller\LoginController:
+        tags: ['controller.service_arguments']
+    App\Controller\LogoutController:
+        tags: ['controller.service_arguments']
+    App\Service\AuthenticationService: ~
+        
+    App\Service\FakeMailer:
+        autowire: true
+        autoconfigure: true
+        public: true
+
+    Symfony\Component\Mailer\MailerInterface: '@App\Service\FakeMailer'

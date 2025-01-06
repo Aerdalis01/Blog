@@ -2,20 +2,43 @@
 import { Link, useNavigate } from "react-router-dom";
 import { fetchSection, fetchSectionId } from '../services/sectionServices';
 import { Section } from '../components/models/sectionInterface';
-import { SectionDetail } from '../pages/SectionDetail';
 import { useEffect, useState } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faUser } from '@fortawesome/free-solid-svg-icons';
+import { faUser, faSignOutAlt } from '@fortawesome/free-solid-svg-icons';
+import { handleLogout } from "../services/LogoutService";
+import { getUserRoles, isTokenValid } from "../services/loginServices"; 
 
 export const Header: React.FC = () => {
+  const [isConnected, setIsConnected] = useState(false);
   const [sections, setSections] = useState<Section[]>([]);
   const [selectedSectionId, setSelectedSectionId] = useState<number | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [showHide, setShowHide] = useState(false);
   const navigate = useNavigate();
+  const [roles, setRoles] = useState<string[]>([])
+  const hasRole = (roles: string[], roleToCheck: string): boolean => {
+    return roles.includes(roleToCheck);
+  };
+  useEffect(() => {
+    setIsConnected(isTokenValid());
+  }, []);
+
+  const onLogout = () => {
+    handleLogout(navigate); // Passer `navigate` à la fonction
+  };
+
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    setIsConnected(!!token);
+    setShowHide(!!token);
+
+    const userRoles = getUserRoles();
+    setRoles(userRoles);
+  }, []);
+  const isAdmin = hasRole(roles, 'ROLE_ADMIN');
+  const isModerator = hasRole(roles, 'ROLE_MODERATOR');
   
-
-
 
   useEffect(() => {
     const loadSection = async () => {
@@ -37,13 +60,13 @@ export const Header: React.FC = () => {
     navigate(`/section/${id}`);
   };
 
- 
+
   const handleBack = () => {
     setSelectedSectionId(null);
   };
 
-  
- 
+
+
   if (loading) return <p>Chargement des sections...</p>;
   if (error) return <p>{error}</p>;
 
@@ -61,18 +84,58 @@ export const Header: React.FC = () => {
           </Link>
 
           <ul className="nav nav-connexion">
-            {/* Icône de connexion pour mobile */}
-            <li className="nav-item d-md-none">
-              <Link to="/login" className="nav-link px-2">
-                <FontAwesomeIcon icon={faUser} style={{ fontSize: "1.5rem", color: "#000" }} />
-              </Link>
-            </li>
-            {/* Texte pour desktop */}
-            <li className="nav-item d-none d-md-block">
-              <Link to="/login" className="nav-link link-body-emphasis px-2">
-                Connexion /Inscription
-              </Link>
-            </li>
+            {!isConnected ? (
+              <>
+                {/* Connexion */}
+                <li className="nav-item d-md-none">
+                  <Link to="/login" className="nav-link px-2">
+                    <FontAwesomeIcon
+                      icon={faUser}
+                      style={{ fontSize: "1.5rem", color: "#000" }}
+                    />
+                  </Link>
+                </li>
+
+                <li className="nav-item d-none d-md-block">
+                  <Link
+                    to="/login"
+                    className="nav-link link-body-emphasis px-2"
+                  >
+                    Connexion / Inscription
+                  </Link>
+                </li>
+              </>
+            ) : (
+              <>
+                {/* Déconnexion */}
+                <li className="nav-item d-none d-md-block">
+                  <Link
+                    to="/"
+                    onClick={onLogout}
+                    className="nav-link link-body-emphasis px-2"
+                  >
+                    Déconnexion
+                  </Link>
+                </li>
+                <li className="nav-item d-md-none">
+                  <button
+                    onClick={onLogout}
+                    style={{
+                      background: "none",
+                      border: "none",
+                      cursor: "pointer",
+                      color: "#000",
+                    }}
+                    title="Se déconnecter"
+                  >
+                    <FontAwesomeIcon
+                      icon={faSignOutAlt}
+                      style={{ fontSize: "1.5rem" }}
+                    />
+                  </button>
+                </li>
+              </>
+            )}
           </ul>
         </div>
       </header>
@@ -89,11 +152,11 @@ export const Header: React.FC = () => {
             {sections.map((section) => (
               <li key={section.id} className="nav-item d-flex align-items-center justify-content-center">
                 <button
-                onClick={() => handleSectionClick(section.id)}
-                style={{ background: "none", border: "none", cursor: "pointer" }}
-              >
-                {section.name}
-              </button>
+                  onClick={() => handleSectionClick(section.id)}
+                  style={{ background: "none", border: "none", cursor: "pointer" }}
+                >
+                  {section.name}
+                </button>
               </li>
             ))}
             <li className="nav-item">
@@ -102,9 +165,11 @@ export const Header: React.FC = () => {
               </Link>
             </li>
             <li className="nav-item">
-              <Link to="/dashboard" className="nav-link link-body-emphasis px-2">
-                Espace Admin
-              </Link>
+            {isConnected && (isAdmin || isModerator) && ( 
+                <Link to="/dashboard" className="nav-link link-body-emphasis px-2">
+                  Espace Admin
+                </Link>
+              )}
             </li>
           </ul>
         </div>

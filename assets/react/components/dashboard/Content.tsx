@@ -3,6 +3,8 @@ import { FormSection } from "../../form/crud/formSection";
 import { FormArticle } from "../../form/crud/FormArticle";
 import { CommentModerateReporting } from "../../form/CommentModeration";
 import { FormFeaturedSections } from "../../form/FormFeaturedSection";
+import { FormUser } from "../../form/crud/FormUser";
+import { SectionPage } from "../../pages/SectionPage";
 
 export const Content: React.FC<{ section: string }> = ({ section }) => {
   const [crudAction, setCrudAction] = useState<string>("");
@@ -35,6 +37,8 @@ export const Content: React.FC<{ section: string }> = ({ section }) => {
         }
       case "comment":
         return < CommentModerateReporting />;
+      case "user":
+        return < FormUser />
       default:
         return <p>Veuillez sélectionner une action pour les articles</p>;
     }
@@ -45,7 +49,8 @@ export const Content: React.FC<{ section: string }> = ({ section }) => {
     <div className="dashboard-content content p-3 d-flex flex-column align-items-center text-center w-100">
       {section === "section" ||
         section === "article" ||
-        section === "comment" ? (
+        section === "comment" || 
+        section === "user" ? (
         <>
           {shouldShowHeader && (
             <h2>
@@ -58,6 +63,7 @@ export const Content: React.FC<{ section: string }> = ({ section }) => {
             </h2>
           )}
           {section !== "comment" &&
+          section !== "user" &&
             (
               <div className="mb-3">
                 <label htmlFor="crudSelect" className="form-label">

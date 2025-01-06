@@ -74,7 +74,9 @@ const handleArticleClick = (id: number) => {
                   <div className="card-body">
                     <div className="">
                       <div className="article-content d-md-flex align-items-center justify-content-center">
+                        {article.image ?(
                         <img src={`/uploads/${article.image.url}`} alt={article.image.name || 'Image'} className="img-fluid col-6 col-sm-4 col-md-1" />
+                        ) : null}
                         <div className='d-flex flex-column justify-content-center align-items-center w-100 '>
                         <h3 className="card-title text-dark w-100">{article.title}</h3>
                         <article className="card-text text-dark w-100">{truncaText(article.text, 75)}</article>

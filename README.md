@@ -15,7 +15,13 @@
     composer require symfony/mime
     composer require symfony/web-profiler-bundle --dev
     composer require symfony/maker-bundle --dev
-    
+    composer require lexik/jwt-authentication-bundle
+    composer require symfony/security-bundle
+    composer require symfony/mailer
+    composer require firebase/php-jwt
+
+
+
 **Configuration de Webpack**
     ```bash
     npm install --save-dev @symfony/webpack-encore react react-dom typescript ts-loader @babel/preset-react @babel/preset-env core-js
@@ -47,5 +53,6 @@
     npm install react-bootstrap bootstrap
     npm install react-router-dom
     npm install bad-words
+    npm install jwt-decode
 
 

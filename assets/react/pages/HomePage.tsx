@@ -167,8 +167,8 @@ export const HomePage = () => {
         <div className='row g-3'>
           {latestImage ? (
             latestImage.map((image: Image) => (
-              <div className='col-12 col-md-6 col-lg-4'>
-                <div key={image.id}>
+              <div key={image.id} className='col-12 col-md-6 col-lg-4'>
+                
                   <div className='card'>
                     <div className='car-body d-flex align-items-center justify-content-center '>
                       <img
@@ -179,7 +179,7 @@ export const HomePage = () => {
                     </div>
                   </div>
                 </div>
-              </div>
+              
             ))
           ) : error ? (
             <p style={{ color: 'red' }}>Erreur : {error}</p>

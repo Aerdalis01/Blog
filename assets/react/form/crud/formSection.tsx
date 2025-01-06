@@ -28,7 +28,6 @@ export function FormSection() {
     fetch("/api/section")
       .then((response) => response.json())
       .then((data) => {
-        console.log("Données récupérées :", data);
         setSections(data);
       })
       .catch((error) => {
