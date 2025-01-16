@@ -25,7 +25,6 @@ class AuthenticationService
     {
         dd($request->headers->get('Authorization'));
         $token = $this->tokenStorage->getToken();
-        dd($token);
         if ($token === null || !$token->getUser() instanceof UserInterface) {
             throw new \LogicException('Aucun utilisateur authentifié.');
         }

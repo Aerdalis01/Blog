@@ -5,13 +5,14 @@ namespace App\Command;
 use App\Repository\ResetPasswordTokenRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Console\Command\Command;
+use Symfony\Component\Console\Command\LockableTrait;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 
 class CleanupExpiredTokensCommand extends Command
 {
+    use LockableTrait;
     protected static $defaultName = 'app:cleanup-expired-tokens';
-
     private ResetPasswordTokenRepository $tokenRepository;
     private EntityManagerInterface $entityManager;
 
@@ -31,15 +32,23 @@ class CleanupExpiredTokensCommand extends Command
 
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
-        $tokens = $this->tokenRepository->findExpiredTokens();
+        if (!$this->lock()) {
+            $output->writeln('La commande est déjà en cours d\'exécution.');
 
-        foreach ($tokens as $token) {
-            $this->entityManager->remove($token);
+            return Command::FAILURE;
         }
 
-        $this->entityManager->flush();
+        try {
+            $tokens = $this->tokenRepository->findExpiredTokens();
+            foreach ($tokens as $token) {
+                $this->entityManager->remove($token);
+            }
+            $this->entityManager->flush();
 
-        $output->writeln(sprintf('%d tokens expirés supprimés.', count($tokens)));
+            $output->writeln(sprintf('%d tokens expirés supprimés.', count($tokens)));
+        } finally {
+            $this->release();
+        }
 
         return Command::SUCCESS;
     }
